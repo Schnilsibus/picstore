@@ -4,7 +4,6 @@ from typing import Tuple, List
 from shutil import copy2
 
 # TODO: add documentation
-# TODO: add a check / report if the FotoDir is intact
 # TODO: maybe add settings file --> a setting would me the file extensions that are accepted as RAW / STD file
 # TODO:
 
