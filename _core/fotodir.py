@@ -17,7 +17,7 @@ class FotoDir:
 
     _DATE_FORMAT = "%Y-%m-%d"
     _ALL_SUB_DIRS = ["STD", "RAW", "EXP", "LR", "OTHR"]
-    _RAW_SUFFIXES = [".CR2", ]
+    _RAW_SUFFIXES = [".CR2", ".DNG"]
     _STD_SUFFIXES = [".STD", ".JPG", ".JPEG"]
 
     def __init__(self, path: Path, name: str = None, start_date: date = None, source: Path = None):
