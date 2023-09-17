@@ -20,23 +20,23 @@ class FotoDir:
     _RAW_SUFFIXES = [".CR2", ".DNG"]
     _STD_SUFFIXES = [".STD", ".JPG", ".JPEG", ".DNG"]
 
-    def __init__(self, path: Path, name: str = None, start_date: date = None, source: Path = None):
+    def __init__(self, path_or_parent: Path, name: str = None, start_date: date = None, source: Path = None):
         if (name is None and start_date is not None) or (name is not None and start_date is None):
             raise TypeError("name and date must either both have a value or both be None")
         self._directories = {}
         self._raw_files = []
         self._std_files = []
         if name is None:
-            self._load(path=path)
+            self._load(path=path_or_parent)
         else:
-            self._create(parent_dir=path, name=name, start_date=start_date)
+            self._create(parent_dir=path_or_parent, name=name, start_date=start_date)
         if source:
             self.__add__(source)
 
     def __add__(self, other) -> int:
         if not issubclass(type(other), Path) or not other.is_dir():
             raise TypeError("can only add existing directories")
-        files = other.iterdir()
+        files = list(other.iterdir())
         raw_files = [file for file in files if file.suffix.upper() in FotoDir._RAW_SUFFIXES]
         std_files = [file for file in files if file.suffix.upper() in FotoDir._STD_SUFFIXES]
         for file in raw_files:
@@ -45,6 +45,9 @@ class FotoDir:
             copy2(file, self._directories["STD"])
         self._sync_with_file_system()
         return len(raw_files) + len(std_files)
+
+    def __eq__(self, other) -> bool:
+        raise NotImplementedError()
 
     def _load(self, path: Path) -> None:
         self.path = path
@@ -67,7 +70,7 @@ class FotoDir:
     def _fill_sub_dirs_dict(self, create: bool = False) -> None:
         for sub_dir in FotoDir._ALL_SUB_DIRS:
             self._directories[sub_dir] = self.path / sub_dir
-            if not self._directories[sub_dir].isdir() and create:
+            if not self._directories[sub_dir].is_dir() and create:
                 (self.path / sub_dir).mkdir()
             elif not self._directories[sub_dir].isdir() and not create:
                 raise NotAFotoDirError(f"The {sub_dir} sub directory is missing")
