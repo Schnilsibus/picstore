@@ -11,6 +11,7 @@ from typing import Union
 # TODO:      - name in the first docu-comment is jsonx not extend_json
 # TODO: get rid of use_dict --> always use dict
 # TODO: implement save_setting
+# TODO: maybe change to a class with __getattr__() so that you can do Settings.<name> and that returns the setting
 
 
 _FILE = Path()
