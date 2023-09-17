@@ -18,7 +18,7 @@ class FotoDir:
     _DATE_FORMAT = "%Y-%m-%d"
     _ALL_SUB_DIRS = ["STD", "RAW", "EXP", "LR", "OTHR"]
     _RAW_SUFFIXES = [".CR2", ".DNG"]
-    _STD_SUFFIXES = [".STD", ".JPG", ".JPEG"]
+    _STD_SUFFIXES = [".STD", ".JPG", ".JPEG", ".DNG"]
 
     def __init__(self, path: Path, name: str = None, start_date: date = None, source: Path = None):
         if (name is None and start_date is not None) or (name is not None and start_date is None):
