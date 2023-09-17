@@ -5,7 +5,8 @@ from shutil import copy2
 
 # TODO: add documentation
 # TODO: maybe add settings file --> a setting would me the file extensions that are accepted as RAW / STD file
-# TODO:
+# TODO: dont use __add__ but std public method add
+# TODO: in add ignore files that are already present in the target dir --> return the number of added files (NOT files found in source)
 
 
 class NotAFotoDirError(Exception):

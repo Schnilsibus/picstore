@@ -9,7 +9,8 @@ from typing import Union
 # TODO:        --> maybe not use Any but a Union with all possible json types
 # TODO:        --> add a Property and a Object type: Object ^= dict; Property ^= Union[list, str, float, bool, None]
 # TODO:      - name in the first docu-comment is jsonx not extend_json
-# TODO:
+# TODO: get rid of use_dict --> always use dict
+# TODO: implement save_setting
 
 
 _FILE = Path()
@@ -29,8 +30,6 @@ def get_setting(name: str) -> Setting:
         return _FILE_AS_DICT[name]
     else:
         return extend_json.getProperty(filePath=_FILE, keys=(name, ))
-
-
 
 
 def save_setting(name: str, value: Setting) -> None:

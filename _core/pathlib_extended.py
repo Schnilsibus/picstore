@@ -3,7 +3,7 @@ from typing import List
 
 
 # TODO: add documentation
-# TODO: maybe use the pattern I found on the internet
+# TODO: maybe use the pattern I found on the internet (Adapter pattern: https://stackoverflow.com/questions/7139111/python-extension-methods)
 # TODO: make it its own project; upload to pip
 
 def recursive_iterdir(path: Path) -> List[Path]:
