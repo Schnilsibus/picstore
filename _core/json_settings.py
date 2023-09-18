@@ -1,6 +1,5 @@
 import extend_json
 from pathlib import Path
-from typing import Union
 
 # TODO: add documentation
 # TODO: make it its own thing and add to git / pip
@@ -9,31 +8,30 @@ from typing import Union
 # TODO:        --> maybe not use Any but a Union with all possible json types
 # TODO:        --> add a Property and a Object type: Object ^= dict; Property ^= Union[list, str, float, bool, None]
 # TODO:      - name in the first docu-comment is jsonx not extend_json
-# TODO: get rid of use_dict --> always use dict
-# TODO: implement save_setting
-# TODO: maybe change to a class with __getattr__() so that you can do Settings.<name> and that returns the setting
 
-
-_FILE = Path()
-_FILE_AS_DICT = {}
-
-use_dict = True
 
 Setting = extend_json.Property
 
 
-def select_file(path: Path) -> None:
-    raise NotImplementedError()
+class Settings:
+    def __init__(self, path: Path):
+        self._FILE = path
 
+    def __getattr__(self, name: str) -> Setting:
+        if name not in self.__dict__:
+            self.__dict__[name] = extend_json.getProperty(filePath=self._FILE, keys=(name, ))
+        return self.__dict__[name]
 
-def get_setting(name: str) -> Setting:
-    if use_dict and name in _FILE_AS_DICT:
-        return _FILE_AS_DICT[name]
-    else:
-        return extend_json.getProperty(filePath=_FILE, keys=(name, ))
+    def __setattr__(self, name: str, value: Setting) -> Setting:
+        self.__dict__[name] = value
+        return value
 
-
-def save_setting(name: str, value: Setting) -> None:
-    raise NotImplementedError()
-
-
+    def save(self) -> int:
+        counter = 0
+        for name in self.__dict__:
+            if extend_json.containsProperty(filePath=self._FILE, keys=(name, )):
+                file_property = extend_json.getProperty(filePath=self._FILE, keys=(name, ))
+                if not file_property == self.__dict__[name]:
+                    extend_json.setProperty(filePath=self._FILE, keys=(name, ), value=self.__dict__[name])
+                    counter += 1
+        return counter
