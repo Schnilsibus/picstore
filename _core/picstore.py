@@ -1,17 +1,18 @@
-from cmd_arguments import parse_arguments
+import cli
+from argparse import Namespace
+
 
 # TODO: add it to github
-# TODO: make seperate projects for json_settings, pathlib_extended
+# TODO: make separate projects for json_settings, pathlib_extended
 # TODO: finish basic functionality (managing local FotoDirs)
-# TODO: add syncing capabilities maybe make that a total sepreate application
+# TODO: add syncing capabilities maybe make that a total separate application
 # TODO: ONLY MAYBE add GUI
 
 
 commands = ["list", "create", "help"]
 
 
-def main():
-    args = parse_arguments(commands=commands)
+def main(args: Namespace):
     if args.command == "help":
         print("help")
     elif args.command == "list":
@@ -22,4 +23,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(args=cli.parse_arguments(commands=commands))
