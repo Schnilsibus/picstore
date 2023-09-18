@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from create import create, CreateParser
+from typing import Tuple
 
 
 # TODO: add it to github
@@ -15,7 +16,7 @@ epilog = ""
 
 
 class PicParser(ArgumentParser):
-    def __init__(self):
+    def __init__(self, subparsers: Tuple[ArgumentParser]):
         ArgumentParser.__init__(self,
                                 prog=program_name,
                                 description=description,
@@ -25,6 +26,9 @@ class PicParser(ArgumentParser):
         self.add_argument("cmdargs",
                           nargs="*",
                           help="arguments for the chosen command")
+        for parser in subparsers:
+            subparser = self.add_subparsers()
+            subparser = parser
 
 
 def main(args: Namespace):
