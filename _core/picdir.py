@@ -11,6 +11,14 @@ from shutil import copy2
 # TODO: change to PicDir and picdir.py
 
 
+_tab = "  "
+_chars_name = 20
+_name_not_displayed_completely = "..."
+_chars_pic_count = 6
+_pic_count_limit = 100000
+_pic_count_exceeds_limit = ">=10^5"
+
+
 class NotAPicDirError(Exception):
     def __init__(self, msg: str):
         Exception.__init__(self, msg)
@@ -51,6 +59,23 @@ class PicDir:
 
     def __eq__(self, other) -> bool:
         raise NotImplementedError()
+
+    def __str__(self):
+        string = self.date.strftime(PicDir._DATE_FORMAT) + _tab
+        if len(self.name) > _chars_name - 3:
+            string += self.name[:-3] + _name_not_displayed_completely + _tab
+        else:
+            string += self.name.ljust(20) + _tab
+        if self.num_raw_files > _pic_count_limit:
+            string += _pic_count_exceeds_limit + "/"
+        else:
+            string += str(self.num_raw_files).ljust(_chars_pic_count)
+        if self.num_std_files > _pic_count_limit:
+            string += _pic_count_exceeds_limit
+        else:
+            string += str(self.num_std_files).ljust(_chars_pic_count)
+        return string
+
 
     def _load(self, path: Path) -> None:
         self.path = path
