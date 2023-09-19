@@ -1,5 +1,5 @@
 from pathlib import Path
-from datetime import date, datetime
+import datetime
 from typing import Tuple, List
 from shutil import copy2
 
@@ -31,8 +31,8 @@ class PicDir:
     _RAW_SUFFIXES = [".CR2", ".DNG"]
     _STD_SUFFIXES = [".STD", ".JPG", ".JPEG", ".DNG"]
 
-    def __init__(self, path_or_parent: Path, name: str = None, start_date: date = None, source: Path = None):
-        if (name is None and start_date is not None) or (name is not None and start_date is None):
+    def __init__(self, path_or_parent: Path, name: str = None, date: datetime.date = None, source: Path = None):
+        if (name is None and date is not None) or (name is not None and date is None):
             raise TypeError("name and date must either both have a value or both be None")
         self._directories = {}
         self._raw_files = []
@@ -40,7 +40,7 @@ class PicDir:
         if name is None:
             self._load(path=path_or_parent)
         else:
-            self._create(parent_dir=path_or_parent, name=name, start_date=start_date)
+            self._create(parent_dir=path_or_parent, name=name, date=date)
         if source:
             self.add_pictures(path=source)
 
@@ -76,17 +76,16 @@ class PicDir:
             string += str(self.num_std_files).ljust(_chars_pic_count)
         return string
 
-
     def _load(self, path: Path) -> None:
         self.path = path
         self.name, self.date = PicDir._path_to_name_date(path=path)
         self._fill_sub_dirs_dict()
         self._sync_with_file_system()
 
-    def _create(self, parent_dir: Path, name: str, start_date: date) -> None:
-        self.path = parent_dir / f"{start_date.strftime(PicDir._DATE_FORMAT)}_{name}"
+    def _create(self, parent_dir: Path, name: str, date: datetime.date) -> None:
+        self.path = parent_dir / f"{date.strftime(PicDir._DATE_FORMAT)}_{name}"
         self.name = name
-        self.date = start_date
+        self.date = date
         self.path.mkdir()
         self._fill_sub_dirs_dict(create=True)
         self._sync_with_file_system()
@@ -104,8 +103,8 @@ class PicDir:
                 raise NotAPicDirError(f"The {sub_dir} sub directory is missing")
 
     @staticmethod
-    def _path_to_name_date(path: Path) -> Tuple[str, date]:
-        start_date = datetime.strptime(path.name[:len(PicDir._DATE_FORMAT)], PicDir._DATE_FORMAT)
+    def _path_to_name_date(path: Path) -> Tuple[str, datetime.date]:
+        start_date = datetime.datetime.strptime(path.name[:len(PicDir._DATE_FORMAT)], PicDir._DATE_FORMAT)
         name = path.name[len(PicDir._DATE_FORMAT) + 1:]
         return name, start_date
 

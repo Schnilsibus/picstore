@@ -23,4 +23,4 @@ setuptools.setup(
         "Programming Language :: Python"
     ],
     test_suite="tests",
-)   
+)

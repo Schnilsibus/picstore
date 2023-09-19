@@ -1,6 +1,5 @@
-from argparse import ArgumentParser, Namespace
-from create import create, CreateParser
-from typing import Tuple
+from argparse import Namespace
+import cli
 
 
 # TODO: add it to github
@@ -10,16 +9,9 @@ from typing import Tuple
 # TODO: ONLY MAYBE add GUI
 
 
-
-
 def main(args: Namespace):
-    if args.command == "help":
-        print("help")
-    elif args.command == "list":
-        print("list")
-    elif args.command == "create":
-        print(f"{', '.join(args.args)}")
+    print(args)
 
 
 if __name__ == "__main__":
-    main(args=PicParser().parse_args())
+    main(args=cli.parse())
