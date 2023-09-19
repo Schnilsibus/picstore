@@ -9,26 +9,7 @@ from typing import Tuple
 # TODO: add syncing capabilities maybe make that a total separate application
 # TODO: ONLY MAYBE add GUI
 
-program_name = "picstore"
-description = "picstore is a cmd program that handles storage of pictures. " \
-              "It's core functionality is to organize pictures in different directories."
-epilog = ""
 
-
-class PicParser(ArgumentParser):
-    def __init__(self, subparsers: Tuple[ArgumentParser]):
-        ArgumentParser.__init__(self,
-                                prog=program_name,
-                                description=description,
-                                epilog=epilog)
-        self.add_argument("command",
-                          help="choose a command for picstore to execute")
-        self.add_argument("cmdargs",
-                          nargs="*",
-                          help="arguments for the chosen command")
-        for parser in subparsers:
-            subparser = self.add_subparsers()
-            subparser = parser
 
 
 def main(args: Namespace):

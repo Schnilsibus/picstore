@@ -12,6 +12,10 @@ description = "creates a new picdir"
 epilog = ""
 
 
+def create_parser_factory(parser: ArgumentParser) -> None:
+    raise NotImplementedError()
+
+
 class CreateParser(ArgumentParser):
 
     _DATE_FORMAT = "%d-%m-%y"
