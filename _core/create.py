@@ -10,5 +10,5 @@ def create(directory: Path, name: str, date: datetime.date, source: Path) -> Pic
     return newdir
 
 
-def cli_create(args: Namespace) -> PicDir:
-    return create(directory=args.dir, name=args.name, date=args.date, source=args.source)
+def cli_create(args: Namespace) -> None:
+    picdir = create(directory=args.dir, name=args.name, date=args.date, source=args.source)

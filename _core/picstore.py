@@ -1,5 +1,7 @@
 from argparse import Namespace
 import cli
+from create import cli_create
+from list import cli_list
 
 
 # TODO: add it to github
@@ -10,7 +12,11 @@ import cli
 
 
 def main(args: Namespace):
-    print(args)
+    cmd = vars(args).pop("command")
+    if cmd == "create":
+        cli_create(args=args)
+    elif cmd == "list":
+        cli_list(args=args)
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ from pathlib import Path
 import datetime
 from typing import Tuple, List
 from shutil import copy2
+from tqdm import tqdm
 
 # TODO: add documentation
 # TODO: maybe add settings file --> a setting would me the file extensions that are accepted as RAW / STD file
@@ -50,9 +51,9 @@ class PicDir:
         files = list(path.iterdir())
         raw_files = [file for file in files if file.suffix.upper() in PicDir._RAW_SUFFIXES]
         std_files = [file for file in files if file.suffix.upper() in PicDir._STD_SUFFIXES]
-        for file in raw_files:
+        for file in tqdm(raw_files):
             copy2(file, self._directories["RAW"])
-        for file in std_files:
+        for file in tqdm(std_files):
             copy2(file, self._directories["STD"])
         self._sync_with_file_system()
         return len(raw_files) + len(std_files)
@@ -116,11 +117,13 @@ class PicDir:
     def num_std_files(self) -> int:
         return len(self._std_files)
 
-    def is_intact(self) -> bool:
+    @staticmethod
+    def is_intact(directory: Path) -> bool:
         invalid_raw_files, invalid_std_files = self.integrity_report()
         return len(invalid_raw_files) + len(invalid_std_files) == 0
 
-    def integrity_report(self) -> Tuple[List, List]:
+    @staticmethod
+    def integrity_report(directory: Path) -> Tuple[List, List]:
         self._sync_with_file_system()
         invalid_raw_files = [file for file in self._raw_files if file.suffix.upper() not in PicDir._RAW_SUFFIXES]
         invalid_std_files = [file for file in self._std_files if file.suffix.upper() not in PicDir._STD_SUFFIXES]
