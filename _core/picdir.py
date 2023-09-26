@@ -9,8 +9,8 @@ from tqdm import tqdm
 # TODO: dont use __add__ but std public method add
 # TODO: in add ignore files that are already present in the target dir
 # TODO:  --> return the number of added files (NOT files found in source)
-# TODO: change to PicDir and picdir.py
-
+# TODO: realize desired file structure in code with ParentPicDir (make it iterable and indexable etc.) also check it only contains valid picdirs
+# TODO: make it so that parent_or_path arg of PicDir constructor is of type Union[ParentPicDir, Path]
 
 _tab = "  "
 _chars_name = 20
@@ -20,15 +20,23 @@ _pic_count_limit = 100000
 _pic_count_exceeds_limit = ">=10^5"
 
 
+class ParentPicDir:
+    def __init__(self, path: Path):
+        self.path = path
+
+    def __iter__(self):
+
+
+
+
 class NotAPicDirError(Exception):
     def __init__(self, msg: str):
         Exception.__init__(self, msg)
 
 
 class PicDir:
-
     _DATE_FORMAT = "%Y-%m-%d"
-    _ALL_SUB_DIRS = ["STD", "RAW", "EXP", "LR", "OTHR"]
+    _ALL_SUB_DIRECTORIES = ["STD", "RAW", "EXP", "LR", "OTHR"]
     _RAW_SUFFIXES = [".CR2", ".DNG"]
     _STD_SUFFIXES = [".STD", ".JPG", ".JPEG", ".DNG"]
 
@@ -79,7 +87,7 @@ class PicDir:
 
     def _load(self, path: Path) -> None:
         self.path = path
-        self.name, self.date = PicDir._path_to_name_date(path=path)
+        self.name, self.date = PicDir._path_to_name_and_date(path=path)
         self._fill_sub_dirs_dict()
         self._sync_with_file_system()
 
@@ -96,7 +104,7 @@ class PicDir:
         self._std_files = self._directories["STD"].iterdir()
 
     def _fill_sub_dirs_dict(self, create: bool = False) -> None:
-        for sub_dir in PicDir._ALL_SUB_DIRS:
+        for sub_dir in PicDir._ALL_SUB_DIRECTORIES:
             self._directories[sub_dir] = self.path / sub_dir
             if not self._directories[sub_dir].is_dir() and create:
                 (self.path / sub_dir).mkdir()
@@ -104,7 +112,7 @@ class PicDir:
                 raise NotAPicDirError(f"The {sub_dir} sub directory is missing")
 
     @staticmethod
-    def _path_to_name_date(path: Path) -> Tuple[str, datetime.date]:
+    def _path_to_name_and_date(path: Path) -> Tuple[str, datetime.date]:
         start_date = datetime.datetime.strptime(path.name[:len(PicDir._DATE_FORMAT)], PicDir._DATE_FORMAT)
         name = path.name[len(PicDir._DATE_FORMAT) + 1:]
         return name, start_date
@@ -117,14 +125,38 @@ class PicDir:
     def num_std_files(self) -> int:
         return len(self._std_files)
 
-    @staticmethod
-    def is_intact(directory: Path) -> bool:
-        invalid_raw_files, invalid_std_files = self.integrity_report()
+    def is_intact(self) -> bool:
+        if not PicDir.has_correct_name(directory=self.path):
+            return False
+        if not PicDir.contains_only_sub_directories(directory=self.path):
+            return False
+        invalid_raw_files, invalid_std_files = self.get_files_with_wrong_extension()
         return len(invalid_raw_files) + len(invalid_std_files) == 0
 
-    @staticmethod
-    def integrity_report(directory: Path) -> Tuple[List, List]:
+    def get_files_with_wrong_extension(self) -> Tuple[List, List]:
         self._sync_with_file_system()
         invalid_raw_files = [file for file in self._raw_files if file.suffix.upper() not in PicDir._RAW_SUFFIXES]
         invalid_std_files = [file for file in self._std_files if file.suffix.upper() not in PicDir._STD_SUFFIXES]
         return invalid_raw_files, invalid_std_files
+
+    @staticmethod
+    def has_correct_name(directory: Path) -> bool:
+        if not directory.is_dir():
+            raise ValueError(f"{str(directory)} is no directory")
+        name = directory.parts[-1]
+        try:
+            assert name[4] == name[7] == "-"
+            assert name[10] == "_"
+            int(name[:4])
+            int(name[5:7])
+            int(name[8:10])
+        except AssertionError | ValueError:
+            return False
+        return True
+
+    @staticmethod
+    def contains_only_sub_directories(directory: Path) -> bool:
+        if not directory.is_dir():
+            raise ValueError(f"{str(directory)} is no directory")
+        sub_directories = map(lambda d: d.parts[-1], directory.iterdir())
+        return sorted(sub_directories) == sorted(PicDir._ALL_SUB_DIRECTORIES)

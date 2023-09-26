@@ -6,6 +6,7 @@ from pathlib import Path
 
 # TODO: write ArgumentParser for args of list command
 # TODO: code list command (it lists all FotoDirs in a dir)
+# TODO: use colorama for output (maybe in PicDir class)
 
 
 Attribute = Literal["date", "name", "raw", "std"]
