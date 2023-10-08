@@ -23,10 +23,18 @@ _pic_count_exceeds_limit = ">=10^5"
 class ParentPicDir:
     def __init__(self, path: Path):
         self.path = path
+        self._content = list(self.path.iterdir())
 
     def __iter__(self):
+        return self._content.__iter__()
 
+    def __getitem__(self, item):
+        return self._content.__getitem__(item)
 
+    def sort(self, key: str) -> None:
+        raise NotImplementedError()
+
+    def
 
 
 class NotAPicDirError(Exception):

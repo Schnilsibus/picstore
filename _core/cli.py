@@ -2,6 +2,7 @@ from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 from typing import Callable
 from pathlib import Path
 from datetime import datetime, date
+from json_sett import Settings
 
 
 # TODO: replace _default_dir with setting
@@ -14,7 +15,9 @@ epilog = ""
 
 _DATE_FORMAT = "%d-%m-%y"
 
-_default_dir = Path(r"C:\Users\Nils\Pictures\mypics")
+settings = Settings(file=Path(__file__).parent / "data" / "config.json")
+default_dir = settings.default_dir
+sources = settings.sources
 
 
 class PicParser(ArgumentParser):

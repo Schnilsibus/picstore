@@ -1,0 +1,15 @@
+{
+  "default_dir": "D:/Desktop/parent_dir",
+  "sources": [
+    "D:/Desktop/test_source"
+  ],
+  "raw_types": [
+    ".CR2",
+    ".DNG"
+  ],
+  "std_types": [
+    ".JPG",
+    ".JPEG",
+    ".PNG"
+  ]
+}
