@@ -17,7 +17,6 @@ _DATE_FORMAT = "%d-%m-%y"
 
 settings = Settings(file=Path(__file__).parent / "data" / "config.json")
 default_dir = settings.default_dir
-sources = settings.sources
 
 
 class PicParser(ArgumentParser):
@@ -40,7 +39,7 @@ def create_parser_factory(parser: ArgumentParser) -> None:
     parser.add_argument("-dir", "--parent-dir",
                         help=f"where to create the new picdir",
                         type=Path,
-                        default=str(_default_dir),
+                        default=str(default_dir),
                         dest="dir")
     parser.add_argument("-d", "--date",
                         help="the date (DD-MM-YY) of the new picdir",
@@ -53,9 +52,9 @@ def create_parser_factory(parser: ArgumentParser) -> None:
 
 def list_parser_factory(parser: ArgumentParser) -> None:
     parser.add_argument("-dir",
-                        help=f"dir in which all pic dirs should be listed (default: {str(_default_dir)})",
+                        help=f"dir in which all pic dirs should be listed (default: {str(default_dir)})",
                         type=Path,
-                        default=_default_dir)
+                        default=default_dir)
     parser.add_argument("-s", "--sort",
                         help="sort the output",
                         choices=["date", "name", "raw", "std"])
