@@ -5,9 +5,6 @@ from datetime import datetime, date
 from json_sett import Settings
 
 
-# TODO: replace _default_dir with setting
-
-
 program_name = "picstore"
 description = "picstore is a cmd program that handles storage of pictures. " \
               "It's core functionality is to organize pictures in different directories."
@@ -15,7 +12,7 @@ epilog = ""
 
 _date_format = "%d-%m-%y"
 
-settings = Settings(file=Path(__file__).parent / "data" / "config.json")
+settings = Settings(file=Path(__file__).parent.parent / "data" / "config.json")
 default_dir = settings.default_dir
 
 

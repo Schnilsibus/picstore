@@ -4,11 +4,11 @@ from create import cli_create
 from list import cli_list
 
 
-# TODO: add it to github
-# TODO: make separate projects for json_settings, pathlib_extended
-# TODO: finish basic functionality (managing local FotoDirs)
+# TODO: [make separate projects for pathlib_extended]
+# TODO: add doc strings
+# TODO: add view command --> detailed view of one pic dir if status is not okay shows why
+# TODO: solution for names (should they be unique if not how can you choose the exact picdir you want?)
 # TODO: add syncing capabilities maybe make that a total separate application
-# TODO: ONLY MAYBE add GUI
 
 
 def main(args: Namespace):

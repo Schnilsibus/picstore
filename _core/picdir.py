@@ -1,17 +1,15 @@
 from pathlib import Path
 import datetime
-from typing import Tuple, List, Union
+from typing import Tuple, List, Union, Iterator
 from shutil import copy2
 from tqdm import tqdm
 from json_sett import Settings
 from colorama import Fore, Style
 
-# TODO: add documentation
-# TODO: make it so that parent_or_path arg of PicDir constructor is of type Union[ParentPicDir, Path]
 
 _tab = "   "
 _date_format = "%Y-%m-%d"
-_date_length = len(_date_format)
+_date_length = 10
 _name_length = 20
 _pic_count_length = 6
 _pic_count_limit = 100000
@@ -24,36 +22,12 @@ _raw_suffixes = settings.raw_types
 _std_suffixes = settings.std_types
 
 
-class ParentPicDir:
-    def __init__(self, path: Path):
-        self._path = path
-        self._load_picdirs()
-
-    @property
-    def path(self) -> Path:
-        return self._path
-
-    def __iter__(self):
-        return self._picdirs.__iter__()
-
-    def __getitem__(self, item):
-        return self._picdirs.__getitem__(item)
-
-    def _load_picdirs(self) -> None:
-        self._picdirs = []
-        for path in self.path.iterdir():
-            if not path.is_dir():
-                raise IOError(f"{path} is not valid (only picdirs allowed)")
-            else:
-                self._picdirs.append(PicDir(path_or_parent=self.path))
-
-
 class PicDir:
     _all_sub_directories = ["STD", "RAW", "EXP", "LR", "OTHR"]
 
     def __init__(
             self,
-            path_or_parent: Union[ParentPicDir, Path],
+            path_or_parent: Path,
             name: str = None,
             date: datetime.date = None,
             source: Path = None,
@@ -92,15 +66,16 @@ class PicDir:
             return True
 
     def __str__(self):
-        string = self.date.strftime(_date_format) + _tab
+        string = ""
         if len(self.name) > _name_length - 3:
             string += self.name[:-3] + "..." + _tab
         else:
             string += self.name.ljust(20) + _tab
+        string += self.date.strftime(_date_format) + _tab
         if self.num_raw_files > _pic_count_limit:
-            string += ">=10^5/"
+            string += ">=10^5" + _tab
         else:
-            string += str(self.num_raw_files).ljust(_pic_count_length)
+            string += str(self.num_raw_files).ljust(_pic_count_length) + _tab
         if self.num_std_files > _pic_count_limit:
             string += ">=10^5" + _tab
         else:
@@ -109,7 +84,7 @@ class PicDir:
             string += f"{Fore.GREEN}{'ok'.ljust(_status_length)}"
         else:
             string += f"{Fore.RED}{'bad'.ljust(_status_length)}"
-        return string
+        return f"{string}{Style.RESET_ALL}"
 
     def _load(self, path: Path) -> None:
         self.path = path
@@ -117,8 +92,8 @@ class PicDir:
         self._load_sub_directories()
         self._sync_with_file_system()
 
-    def _create(self, parent_dir: ParentPicDir, name: str, date: datetime.date) -> None:
-        self.path = parent_dir.path / f"{date.strftime(_date_format)}_{name}"
+    def _create(self, parent_dir: Path, name: str, date: datetime.date) -> None:
+        self.path = parent_dir / f"{date.strftime(_date_format)}_{name}"
         self.name = name
         self.date = date
         self.path.mkdir()
@@ -134,22 +109,24 @@ class PicDir:
             self._directories[sub_dir] = self.path / sub_dir
             if not self._directories[sub_dir].is_dir() and create:
                 (self.path / sub_dir).mkdir()
-            elif not self._directories[sub_dir].isdir() and not create:
+            elif not self._directories[sub_dir].is_dir() and not create:
                 raise IOError(f"The {sub_dir} sub directory is missing")
 
     @staticmethod
     def _path_to_name_and_date(path: Path) -> Tuple[str, datetime.date]:
-        start_date = datetime.datetime.strptime(path.name[:len(_date_format)], _date_format)
-        name = path.name[len(_date_format) + 1:]
+        start_date = datetime.datetime.strptime(path.name[:_date_length], _date_format)
+        name = path.name[_date_length + 1:]
         return name, start_date
 
     @staticmethod
     def table_header() -> str:
-        string = "date".ljust(_date_length) + _tab
-        string += "name".ljust(_name_length) + _tab
-        string += "#raw  /#std  ".ljust(_name_length) + _tab
-        string += "status".ljust(_name_length)
-        return f"{Style.BRIGHT}{string}"
+        string = "name".ljust(_name_length) + _tab
+        string += "date".ljust(_date_length) + _tab
+        string += "#raw".ljust(_pic_count_length) + _tab
+        string += "#std".ljust(_pic_count_length) + _tab
+        string += "status".ljust(_status_length)
+        separator = "-" * len(string)
+        return f"{Style.BRIGHT}{string}{Style.RESET_ALL}" + "\n" + separator
 
     @property
     def num_raw_files(self) -> int:
@@ -222,3 +199,27 @@ class PicDir:
             raise ValueError(f"{str(directory)} is no directory")
         sub_directories = map(lambda d: d.parts[-1], directory.iterdir())
         return sorted(sub_directories) == sorted(PicDir._all_sub_directories)
+
+
+class ParentPicDir:
+    def __init__(self, path: Path):
+        self._path = path
+        self._load_picdirs()
+
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    def __iter__(self) -> Iterator[PicDir]:
+        return self._picdirs.__iter__()
+
+    def __getitem__(self, item) -> PicDir:
+        return self._picdirs.__getitem__(item)
+
+    def _load_picdirs(self) -> None:
+        self._picdirs = []
+        for path in self.path.iterdir():
+            if not path.is_dir():
+                raise IOError(f"{path} is not valid (only picdirs allowed)")
+            else:
+                self._picdirs.append(PicDir(path_or_parent=path))
