@@ -7,11 +7,7 @@ from json_sett import Settings
 from colorama import Fore, Style
 
 # TODO: add documentation
-# TODO: in add ignore files that are already present in the target dir
-# TODO:  --> return the number of added files (NOT files found in source)
-# TODO: realize desired file structure in code with ParentPicDir (make it iterable and indexable etc.) also check it only contains valid picdirs
 # TODO: make it so that parent_or_path arg of PicDir constructor is of type Union[ParentPicDir, Path]
-# TODO: implement __eq__
 
 _tab = "   "
 _date_format = "%Y-%m-%d"
@@ -57,7 +53,7 @@ class PicDir:
 
     def __init__(
             self,
-            path_or_parent: Path,
+            path_or_parent: Union[ParentPicDir, Path],
             name: str = None,
             date: datetime.date = None,
             source: Path = None
@@ -75,15 +71,24 @@ class PicDir:
             self.add(source=source)
 
     def __eq__(self, other) -> bool:
-        raise NotImplementedError()
+        """
 
-    @staticmethod
-    def table_header() -> str:
-        string = "date".ljust(_date_length) + _tab
-        string += "name".ljust(_name_length) + _tab
-        string += "#raw  /#std  ".ljust(_name_length) + _tab
-        string += "status".ljust(_name_length)
-        return f"{Style.BRIGHT}{string}"
+        :type other: PicDir
+        """
+        if not type(other) == PicDir:
+            return False
+        self._sync_with_file_system()
+        other._sync_with_file_system()
+        if not self.name == other.name:
+            return False
+        elif not self.date == other.date:
+            return False
+        elif not self._raw_files == other._raw_files:
+            return False
+        elif not self._std_files == other._raw_files:
+            return False
+        else:
+            return True
 
     def __str__(self):
         string = self.date.strftime(_date_format) + _tab
@@ -111,8 +116,8 @@ class PicDir:
         self._load_sub_directories()
         self._sync_with_file_system()
 
-    def _create(self, parent_dir: Path, name: str, date: datetime.date) -> None:
-        self.path = parent_dir / f"{date.strftime(_date_format)}_{name}"
+    def _create(self, parent_dir: ParentPicDir, name: str, date: datetime.date) -> None:
+        self.path = parent_dir.path / f"{date.strftime(_date_format)}_{name}"
         self.name = name
         self.date = date
         self.path.mkdir()
@@ -137,6 +142,14 @@ class PicDir:
         name = path.name[len(_date_format) + 1:]
         return name, start_date
 
+    @staticmethod
+    def table_header() -> str:
+        string = "date".ljust(_date_length) + _tab
+        string += "name".ljust(_name_length) + _tab
+        string += "#raw  /#std  ".ljust(_name_length) + _tab
+        string += "status".ljust(_name_length)
+        return f"{Style.BRIGHT}{string}"
+
     @property
     def num_raw_files(self) -> int:
         return len(self._raw_files)
@@ -156,15 +169,22 @@ class PicDir:
     def add_directory(self, directory: Path, display_tqdm: bool = True) -> int:
         if not issubclass(type(directory), Path) or not directory.is_dir():
             raise TypeError("can only add existing directories")
-        files = list(directory.iterdir())
-        raw_files = [file for file in files if file.suffix.upper() in _raw_suffixes]
-        std_files = [file for file in files if file.suffix.upper() in _std_suffixes]
-        return self.add_pictures(pictures=raw_files + std_files, display_tqdm=display_tqdm)
+        return self.add_pictures(pictures=list(directory.iterdir()), display_tqdm=display_tqdm)
 
     def add_pictures(self, pictures: List[Path], display_tqdm: bool = True) -> int:
         if not type(pictures) == list or not all([issubclass(type(picture), Path) for picture in pictures]):
             raise TypeError("parameter 'pictures' must must be a list of 'pathlib.Path's")
-        raise NotImplementedError()
+        to_copy = list(filter(lambda p: p.suffix.upper() in _raw_suffixes + _std_suffixes, pictures))
+        current_file_names = list(map(lambda p: p.name, self._raw_files + self._std_files))
+        to_copy = list(filter(lambda p: p not in current_file_names, to_copy))
+        iterator = tqdm(to_copy) if display_tqdm else to_copy
+        for picture in iterator:
+            if picture.suffix.upper() in _raw_suffixes:
+                copy2(picture, self._directories["RAW"])
+            elif picture.suffix.upper() in _std_suffixes:
+                copy2(picture, self._directories["STD"])
+        self._sync_with_file_system()
+        return len(to_copy)
 
     def is_intact(self) -> bool:
         if not PicDir.has_correct_name(directory=self.path):
@@ -176,8 +196,8 @@ class PicDir:
 
     def get_files_with_wrong_extension(self) -> Tuple[List, List]:
         self._sync_with_file_system()
-        invalid_raw_files = [file for file in self._raw_files if file.suffix.upper() not in PicDir._RAW_SUFFIXES]
-        invalid_std_files = [file for file in self._std_files if file.suffix.upper() not in PicDir._STD_SUFFIXES]
+        invalid_raw_files = [file for file in self._raw_files if file.suffix.upper() not in _raw_suffixes]
+        invalid_std_files = [file for file in self._std_files if file.suffix.upper() not in _std_suffixes]
         return invalid_raw_files, invalid_std_files
 
     @staticmethod
