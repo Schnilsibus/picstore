@@ -49,14 +49,15 @@ class ParentPicDir:
 
 
 class PicDir:
-    _ALL_SUB_DIRECTORIES = ["STD", "RAW", "EXP", "LR", "OTHR"]
+    _all_sub_directories = ["STD", "RAW", "EXP", "LR", "OTHR"]
 
     def __init__(
             self,
             path_or_parent: Union[ParentPicDir, Path],
             name: str = None,
             date: datetime.date = None,
-            source: Path = None
+            source: Path = None,
+            display_tqdm: bool = True
      ):
         if (name is None and date is not None) or (name is not None and date is None):
             raise TypeError("name and date must either both have a value or both be None")
@@ -68,7 +69,7 @@ class PicDir:
         else:
             self._create(parent_dir=path_or_parent, name=name, date=date)
         if source:
-            self.add(source=source)
+            self.add(source=source, display_tqdm=display_tqdm)
 
     def __eq__(self, other) -> bool:
         """
@@ -129,7 +130,7 @@ class PicDir:
         self._std_files = list(self._directories["STD"].iterdir())
 
     def _load_sub_directories(self, create: bool = False) -> None:
-        for sub_dir in PicDir._ALL_SUB_DIRECTORIES:
+        for sub_dir in PicDir._all_sub_directories:
             self._directories[sub_dir] = self.path / sub_dir
             if not self._directories[sub_dir].is_dir() and create:
                 (self.path / sub_dir).mkdir()
@@ -177,7 +178,7 @@ class PicDir:
         to_copy = list(filter(lambda p: p.suffix.upper() in _raw_suffixes + _std_suffixes, pictures))
         current_file_names = list(map(lambda p: p.name, self._raw_files + self._std_files))
         to_copy = list(filter(lambda p: p not in current_file_names, to_copy))
-        iterator = tqdm(to_copy) if display_tqdm else to_copy
+        iterator = tqdm(to_copy, desc="copying files", unit="files") if display_tqdm else to_copy
         for picture in iterator:
             if picture.suffix.upper() in _raw_suffixes:
                 copy2(picture, self._directories["RAW"])
@@ -220,4 +221,4 @@ class PicDir:
         if not directory.is_dir():
             raise ValueError(f"{str(directory)} is no directory")
         sub_directories = map(lambda d: d.parts[-1], directory.iterdir())
-        return sorted(sub_directories) == sorted(PicDir._ALL_SUB_DIRECTORIES)
+        return sorted(sub_directories) == sorted(PicDir._all_sub_directories)

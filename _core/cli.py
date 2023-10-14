@@ -13,7 +13,7 @@ description = "picstore is a cmd program that handles storage of pictures. " \
               "It's core functionality is to organize pictures in different directories."
 epilog = ""
 
-_DATE_FORMAT = "%d-%m-%y"
+_date_format = "%d-%m-%y"
 
 settings = Settings(file=Path(__file__).parent / "data" / "config.json")
 default_dir = settings.default_dir
@@ -43,8 +43,8 @@ def create_parser_factory(parser: ArgumentParser) -> None:
                         dest="dir")
     parser.add_argument("-d", "--date",
                         help="the date (DD-MM-YY) of the new picdir",
-                        type=lambda s: datetime.strptime(s, _DATE_FORMAT),
-                        default=date.today().strftime(_DATE_FORMAT))
+                        type=lambda s: datetime.strptime(s, _date_format),
+                        default=date.today().strftime(_date_format))
     parser.add_argument("-s", "--source",
                         help="pictures to add in the new picdir",
                         type=Path)
