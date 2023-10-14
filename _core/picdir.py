@@ -1,54 +1,67 @@
 from pathlib import Path
 import datetime
-from typing import Tuple, List
+from typing import Tuple, List, Union
 from shutil import copy2
 from tqdm import tqdm
+from json_sett import Settings
+from colorama import Fore, Style
 
 # TODO: add documentation
-# TODO: maybe add settings file --> a setting would me the file extensions that are accepted as RAW / STD file
-# TODO: dont use __add__ but std public method add
 # TODO: in add ignore files that are already present in the target dir
 # TODO:  --> return the number of added files (NOT files found in source)
 # TODO: realize desired file structure in code with ParentPicDir (make it iterable and indexable etc.) also check it only contains valid picdirs
 # TODO: make it so that parent_or_path arg of PicDir constructor is of type Union[ParentPicDir, Path]
+# TODO: implement __eq__
 
-_tab = "  "
-_chars_name = 20
-_name_not_displayed_completely = "..."
-_chars_pic_count = 6
+_tab = "   "
+_date_format = "%Y-%m-%d"
+_date_length = len(_date_format)
+_name_length = 20
+_pic_count_length = 6
 _pic_count_limit = 100000
 _pic_count_exceeds_limit = ">=10^5"
+_status_length = 6
+
+
+settings = Settings(Path(__file__).parent.parent / "data" / "config.json")
+_raw_suffixes = settings.raw_types
+_std_suffixes = settings.std_types
 
 
 class ParentPicDir:
     def __init__(self, path: Path):
-        self.path = path
-        self._content = list(self.path.iterdir())
+        self._path = path
+        self._load_picdirs()
+
+    @property
+    def path(self) -> Path:
+        return self._path
 
     def __iter__(self):
-        return self._content.__iter__()
+        return self._picdirs.__iter__()
 
     def __getitem__(self, item):
-        return self._content.__getitem__(item)
+        return self._picdirs.__getitem__(item)
 
-    def sort(self, key: str) -> None:
-        raise NotImplementedError()
-
-    def
-
-
-class NotAPicDirError(Exception):
-    def __init__(self, msg: str):
-        Exception.__init__(self, msg)
+    def _load_picdirs(self) -> None:
+        self._picdirs = []
+        for path in self.path.iterdir():
+            if not path.is_dir():
+                raise IOError(f"{path} is not valid (only picdirs allowed)")
+            else:
+                self._picdirs.append(PicDir(path_or_parent=self.path))
 
 
 class PicDir:
-    _DATE_FORMAT = "%Y-%m-%d"
     _ALL_SUB_DIRECTORIES = ["STD", "RAW", "EXP", "LR", "OTHR"]
-    _RAW_SUFFIXES = [".CR2", ".DNG"]
-    _STD_SUFFIXES = [".STD", ".JPG", ".JPEG", ".DNG"]
 
-    def __init__(self, path_or_parent: Path, name: str = None, date: datetime.date = None, source: Path = None):
+    def __init__(
+            self,
+            path_or_parent: Path,
+            name: str = None,
+            date: datetime.date = None,
+            source: Path = None
+     ):
         if (name is None and date is not None) or (name is not None and date is None):
             raise TypeError("name and date must either both have a value or both be None")
         self._directories = {}
@@ -59,70 +72,69 @@ class PicDir:
         else:
             self._create(parent_dir=path_or_parent, name=name, date=date)
         if source:
-            self.add_pictures(path=source)
-
-    def add_pictures(self, path: Path) -> int:
-        if not issubclass(type(path), Path) or not path.is_dir():
-            raise TypeError("can only add existing directories")
-        files = list(path.iterdir())
-        raw_files = [file for file in files if file.suffix.upper() in PicDir._RAW_SUFFIXES]
-        std_files = [file for file in files if file.suffix.upper() in PicDir._STD_SUFFIXES]
-        for file in tqdm(raw_files):
-            copy2(file, self._directories["RAW"])
-        for file in tqdm(std_files):
-            copy2(file, self._directories["STD"])
-        self._sync_with_file_system()
-        return len(raw_files) + len(std_files)
+            self.add(source=source)
 
     def __eq__(self, other) -> bool:
         raise NotImplementedError()
 
+    @staticmethod
+    def table_header() -> str:
+        string = "date".ljust(_date_length) + _tab
+        string += "name".ljust(_name_length) + _tab
+        string += "#raw  /#std  ".ljust(_name_length) + _tab
+        string += "status".ljust(_name_length)
+        return f"{Style.BRIGHT}{string}"
+
     def __str__(self):
-        string = self.date.strftime(PicDir._DATE_FORMAT) + _tab
-        if len(self.name) > _chars_name - 3:
-            string += self.name[:-3] + _name_not_displayed_completely + _tab
+        string = self.date.strftime(_date_format) + _tab
+        if len(self.name) > _name_length - 3:
+            string += self.name[:-3] + "..." + _tab
         else:
             string += self.name.ljust(20) + _tab
         if self.num_raw_files > _pic_count_limit:
-            string += _pic_count_exceeds_limit + "/"
+            string += ">=10^5/"
         else:
-            string += str(self.num_raw_files).ljust(_chars_pic_count)
+            string += str(self.num_raw_files).ljust(_pic_count_length)
         if self.num_std_files > _pic_count_limit:
-            string += _pic_count_exceeds_limit
+            string += ">=10^5" + _tab
         else:
-            string += str(self.num_std_files).ljust(_chars_pic_count)
+            string += str(self.num_std_files).ljust(_pic_count_length) + _tab
+        if self.is_intact():
+            string += f"{Fore.GREEN}{'ok'.ljust(_status_length)}"
+        else:
+            string += f"{Fore.RED}{'bad'.ljust(_status_length)}"
         return string
 
     def _load(self, path: Path) -> None:
         self.path = path
         self.name, self.date = PicDir._path_to_name_and_date(path=path)
-        self._fill_sub_dirs_dict()
+        self._load_sub_directories()
         self._sync_with_file_system()
 
     def _create(self, parent_dir: Path, name: str, date: datetime.date) -> None:
-        self.path = parent_dir / f"{date.strftime(PicDir._DATE_FORMAT)}_{name}"
+        self.path = parent_dir / f"{date.strftime(_date_format)}_{name}"
         self.name = name
         self.date = date
         self.path.mkdir()
-        self._fill_sub_dirs_dict(create=True)
+        self._load_sub_directories(create=True)
         self._sync_with_file_system()
 
     def _sync_with_file_system(self) -> None:
-        self._raw_files = self._directories["RAW"].iterdir()
-        self._std_files = self._directories["STD"].iterdir()
+        self._raw_files = list(self._directories["RAW"].iterdir())
+        self._std_files = list(self._directories["STD"].iterdir())
 
-    def _fill_sub_dirs_dict(self, create: bool = False) -> None:
+    def _load_sub_directories(self, create: bool = False) -> None:
         for sub_dir in PicDir._ALL_SUB_DIRECTORIES:
             self._directories[sub_dir] = self.path / sub_dir
             if not self._directories[sub_dir].is_dir() and create:
                 (self.path / sub_dir).mkdir()
             elif not self._directories[sub_dir].isdir() and not create:
-                raise NotAPicDirError(f"The {sub_dir} sub directory is missing")
+                raise IOError(f"The {sub_dir} sub directory is missing")
 
     @staticmethod
     def _path_to_name_and_date(path: Path) -> Tuple[str, datetime.date]:
-        start_date = datetime.datetime.strptime(path.name[:len(PicDir._DATE_FORMAT)], PicDir._DATE_FORMAT)
-        name = path.name[len(PicDir._DATE_FORMAT) + 1:]
+        start_date = datetime.datetime.strptime(path.name[:len(_date_format)], _date_format)
+        name = path.name[len(_date_format) + 1:]
         return name, start_date
 
     @property
@@ -132,6 +144,27 @@ class PicDir:
     @property
     def num_std_files(self) -> int:
         return len(self._std_files)
+
+    def add(self, source: Union[Path, List[Path]], display_tqdm: bool = True) -> int:
+        if type(source) == list:
+            return self.add_pictures(pictures=source, display_tqdm=display_tqdm)
+        elif issubclass(type(source), Path):
+            return self.add_directory(directory=source, display_tqdm=display_tqdm)
+        else:
+            raise TypeError("parameter 'source' must ba a 'pathlib.Path' or a list of 'pathlib.Path's")
+
+    def add_directory(self, directory: Path, display_tqdm: bool = True) -> int:
+        if not issubclass(type(directory), Path) or not directory.is_dir():
+            raise TypeError("can only add existing directories")
+        files = list(directory.iterdir())
+        raw_files = [file for file in files if file.suffix.upper() in _raw_suffixes]
+        std_files = [file for file in files if file.suffix.upper() in _std_suffixes]
+        return self.add_pictures(pictures=raw_files + std_files, display_tqdm=display_tqdm)
+
+    def add_pictures(self, pictures: List[Path], display_tqdm: bool = True) -> int:
+        if not type(pictures) == list or not all([issubclass(type(picture), Path) for picture in pictures]):
+            raise TypeError("parameter 'pictures' must must be a list of 'pathlib.Path's")
+        raise NotImplementedError()
 
     def is_intact(self) -> bool:
         if not PicDir.has_correct_name(directory=self.path):
