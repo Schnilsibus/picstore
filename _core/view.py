@@ -25,17 +25,25 @@ def cli_view(args: Namespace) -> None:
     except RuntimeError as ex:
         print(ex)
         return
-    print(f"{Style.BRIGHT}Information on PidDir '{picdir.name}':{Style.RESET_ALL}")
-    print(f"Name: {picdir.name}")
-    print(f"Date: {picdir.date}")
-    print(f"Number of raw files: {picdir.num_raw_files}")
-    print(f"Number of std files: {picdir.num_std_files}")
-    print(f"Path: {picdir.path}")
+    title = f"Information on PicDir '{picdir.name}':"
+    print(f"{Style.BRIGHT}{title}{Style.RESET_ALL}" + "\n" + "-" * len(title))
+    print(f"{'Name:'.ljust(10)}{picdir.name}")
+    print(f"{'Date:'.ljust(10)}{picdir.date.strftime(date_format)}")
+    print(f"{'#RAW:'.ljust(10)}{picdir.num_raw_files}")
+    print(f"{'#STD:'.ljust(10)}{picdir.num_std_files}")
+    print(f"{'Path:'.ljust(10)}{picdir.path}")
     if picdir.is_intact():
-        print(f"Status: {Fore.GREEN}ok{Style.RESET_ALL}")
+        print(f"{'Status:'.ljust(10)}{Fore.GREEN}ok{Style.RESET_ALL}")
     else:
-        print(f"Status: {Fore.RED}bad{Style.RESET_ALL}")
+        print(f"{'Status:'.ljust(10)}{Fore.RED}bad{Style.RESET_ALL}")
+    print()
     print("Invalid files in RAW:")
-    print("\t" + "\n\t".join(map(lambda p: p.name, invalid_raw_files)))
+    if len(invalid_raw_files) > 0:
+        print("\t" + "\n\t".join(map(lambda p: p.name, invalid_raw_files)))
+    else:
+        print("\t---")
     print("Invalid files in STD:")
-    print("\t" + "\n\t".join(map(lambda p: p.name, invalid_raw_files)))
+    if len(invalid_std_files) > 0:
+        print("\t" + "\n\t".join(map(lambda p: p.name, invalid_std_files)))
+    else:
+        print("\t---")

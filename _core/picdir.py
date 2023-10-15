@@ -226,7 +226,7 @@ class ParentPicDir:
 
     def add(self, name: str, date: datetime.date, source: Path) -> PicDir:
         if self.get(name=name, date=date) is not None:
-            raise RuntimeError(f"picdir '{name}' with date {date} already exists in {self.path}")
+            raise RuntimeError(f"picdir '{name}' with date {date.strftime(_date_format)} already exists in {self.path}")
         new_picdir = PicDir(path_or_parent=self.path, name=name, date=date, source=source)
         self._picdirs.append(new_picdir)
         return new_picdir
