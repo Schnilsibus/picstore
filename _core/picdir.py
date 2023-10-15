@@ -30,7 +30,7 @@ class PicDir:
             path_or_parent: Path,
             name: str = None,
             date: datetime.date = None,
-            source: Path = None,
+            source: Union[Path, List[Path]] = None,
             display_tqdm: bool = True
      ):
         if (name is None and date is not None) or (name is not None and date is None):
@@ -224,7 +224,7 @@ class ParentPicDir:
                 return picdir
         return None
 
-    def add(self, name: str, date: datetime.date, source: Path) -> PicDir:
+    def add(self, name: str, date: datetime.date, source: Union[Path, List[Path]]) -> PicDir:
         if self.get(name=name, date=date) is not None:
             raise RuntimeError(f"picdir '{name}' with date {date.strftime(_date_format)} already exists in {self.path}")
         new_picdir = PicDir(path_or_parent=self.path, name=name, date=date, source=source)

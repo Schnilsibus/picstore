@@ -2,16 +2,30 @@ from pathlib import Path
 import datetime
 from picdir import PicDir, ParentPicDir
 from argparse import Namespace
+from typing import Union, List
+from json_sett import Settings
+
+settings = Settings(Path(__file__).parent.parent / "data" / "config.json")
+sources = map(Path, settings.sources)
 
 
-def create(directory: Path, name: str, date: datetime.date, source: Path) -> PicDir:
+def create(directory: Path, name: str, date: datetime.date, source: Union[Path, List[Path]] = None) -> PicDir:
     return ParentPicDir(directory=directory).add(name=name, date=date, source=source)
 
 
 def cli_create(args: Namespace) -> None:
     print(f"creating new picdir in {str(args.dir)}")
     try:
-        new_picdir = create(directory=args.dir, name=args.name, date=args.date, source=args.source)
+        if args.bare:
+            new_picdir = create(directory=args.dir, name=args.name, date=args.date)
+        elif args.source is not None:
+            new_picdir = create(directory=args.dir, name=args.name, date=args.date, source=args.source)
+        else:
+            files = []
+            for source in sources:
+                if source.is_dir():
+                    files.extend(source.iterdir())
+            new_picdir = create(directory=args.dir, name=args.name, date=args.date, source=files)
     except BaseException as ex:
         print(ex)
         return

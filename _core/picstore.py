@@ -7,7 +7,6 @@ from view import cli_view
 
 # TODO: [make separate projects for pathlib_extended]
 # TODO: add doc strings
-# TODO: solution for default sources (and implement them) (maybe add --bare option to create that lets you specify that you definetly want a empty new picdir)
 # TODO: add syncing capabilities maybe make that a total separate application
 
 

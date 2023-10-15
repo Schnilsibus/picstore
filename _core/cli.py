@@ -45,6 +45,9 @@ def create_parser_factory(parser: ArgumentParser) -> None:
     parser.add_argument("-s", "--source",
                         help="pictures to add in the new picdir",
                         type=Path)
+    parser.add_argument("-b", "--bare",
+                        help="make the new picdir empty",
+                        action="store_true")
 
 
 def list_parser_factory(parser: ArgumentParser) -> None:
