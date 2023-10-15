@@ -167,7 +167,7 @@ class PicDir:
     def is_intact(self) -> bool:
         if not PicDir.has_correct_name(directory=self.path):
             return False
-        if not PicDir.contains_only_sub_directories(directory=self.path):
+        if not PicDir.contains_sub_directories(directory=self.path):
             return False
         invalid_raw_files, invalid_std_files = self.get_files_with_wrong_extension()
         return len(invalid_raw_files) + len(invalid_std_files) == 0
@@ -194,16 +194,16 @@ class PicDir:
         return True
 
     @staticmethod
-    def contains_only_sub_directories(directory: Path) -> bool:
+    def contains_sub_directories(directory: Path) -> bool:
         if not directory.is_dir():
             raise ValueError(f"{str(directory)} is no directory")
         sub_directories = map(lambda d: d.parts[-1], directory.iterdir())
-        return sorted(sub_directories) == sorted(PicDir._all_sub_directories)
+        return set(PicDir._all_sub_directories) <= set(sub_directories)
 
 
 class ParentPicDir:
-    def __init__(self, path: Path):
-        self._path = path
+    def __init__(self, directory: Path):
+        self._path = directory
         self._load_picdirs()
 
     @property
@@ -216,10 +216,25 @@ class ParentPicDir:
     def __getitem__(self, item) -> PicDir:
         return self._picdirs.__getitem__(item)
 
+    def get(self, name: str, date: datetime.date = None) -> PicDir | None:
+        for picdir in self:
+            if date is None and picdir.name == name:
+                return picdir
+            elif date is not None and picdir.name == name and picdir.date == date:
+                return picdir
+        return None
+
+    def add(self, name: str, date: datetime.date, source: Path) -> PicDir:
+        if self.get(name=name, date=date) is not None:
+            raise RuntimeError(f"picdir '{name}' with date {date} already exists in {self.path}")
+        new_picdir = PicDir(path_or_parent=self.path, name=name, date=date, source=source)
+        self._picdirs.append(new_picdir)
+        return new_picdir
+
     def _load_picdirs(self) -> None:
         self._picdirs = []
         for path in self.path.iterdir():
-            if not path.is_dir():
-                raise IOError(f"{path} is not valid (only picdirs allowed)")
-            else:
+            try:
                 self._picdirs.append(PicDir(path_or_parent=path))
+            except Exception:
+                pass

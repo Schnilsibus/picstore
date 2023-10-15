@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 def list_pic_dirs(directory: Path, sort: Literal["date", "name", "raw", "std"] = None) -> Tuple[PicDir]:
-    picdirs = list(ParentPicDir(path=directory))
+    picdirs = list(ParentPicDir(directory=directory))
     if sort is not None:
         picdirs.sort(key=lambda d: vars(d)[sort])
     return tuple(picdirs)

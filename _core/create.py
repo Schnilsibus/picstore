@@ -1,11 +1,11 @@
 from pathlib import Path
 import datetime
-from picdir import PicDir
+from picdir import PicDir, ParentPicDir
 from argparse import Namespace
 
 
 def create(directory: Path, name: str, date: datetime.date, source: Path) -> PicDir:
-    return PicDir(path_or_parent=directory, name=name, date=date, source=source)
+    return ParentPicDir(directory=directory).add(name=name, date=date, source=source)
 
 
 def cli_create(args: Namespace) -> None:

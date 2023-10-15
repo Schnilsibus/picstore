@@ -8,6 +8,7 @@ from list import cli_list
 # TODO: add doc strings
 # TODO: add view command --> detailed view of one pic dir if status is not okay shows why
 # TODO: solution for names (should they be unique if not how can you choose the exact picdir you want?)
+# TODO: solution for default sources (and implement them) (maybe add --bare option to create that lets you specify that you definetly want a empty new picdir)
 # TODO: add syncing capabilities maybe make that a total separate application
 
 
