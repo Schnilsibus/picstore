@@ -11,5 +11,10 @@
     ".JPG",
     ".JPEG",
     ".PNG"
+  ],
+  "my_cameras": [
+    "Canon 77D",
+    "Nokia 7 Plus",
+    "Olympus ..."
   ]
 }

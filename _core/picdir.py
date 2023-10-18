@@ -6,9 +6,9 @@ from tqdm import tqdm
 from json_sett import Settings
 from colorama import Fore, Style
 
+date_format = "%F"
 
 _tab = "   "
-_date_format = "%Y-%m-%d"
 _date_length = 10
 _name_length = 20
 _pic_count_length = 6
@@ -31,7 +31,8 @@ class PicDir:
             name: str = None,
             date: datetime.date = None,
             source: Union[Path, List[Path]] = None,
-            display_tqdm: bool = True
+            display_tqdm: bool = True,
+            create_dirs: bool = False
      ):
         if (name is None and date is not None) or (name is not None and date is None):
             raise TypeError("name and date must either both have a value or both be None")
@@ -39,7 +40,7 @@ class PicDir:
         self._raw_files = []
         self._std_files = []
         if name is None:
-            self._load(path=path_or_parent)
+            self._load(path=path_or_parent, create_dirs=create_dirs)
         else:
             self._create(parent_dir=path_or_parent, name=name, date=date)
         if source:
@@ -71,7 +72,7 @@ class PicDir:
             string += self.name[:-3] + "..." + _tab
         else:
             string += self.name.ljust(20) + _tab
-        string += self.date.strftime(_date_format) + _tab
+        string += self.date.strftime(date_format) + _tab
         if self.num_raw_files > _pic_count_limit:
             string += ">=10^5" + _tab
         else:
@@ -86,14 +87,14 @@ class PicDir:
             string += f"{Fore.RED}{'bad'.ljust(_status_length)}"
         return f"{string}{Style.RESET_ALL}"
 
-    def _load(self, path: Path) -> None:
+    def _load(self, path: Path, create_dirs: bool) -> None:
         self.path = path
         self.name, self.date = PicDir._path_to_name_and_date(path=path)
-        self._load_sub_directories()
+        self._load_sub_directories(create=create_dirs)
         self._sync_with_file_system()
 
     def _create(self, parent_dir: Path, name: str, date: datetime.date) -> None:
-        self.path = parent_dir / f"{date.strftime(_date_format)}_{name}"
+        self.path = parent_dir / f"{date.strftime(date_format)}_{name}"
         self.name = name
         self.date = date
         self.path.mkdir()
@@ -114,7 +115,7 @@ class PicDir:
 
     @staticmethod
     def _path_to_name_and_date(path: Path) -> Tuple[str, datetime.date]:
-        start_date = datetime.datetime.strptime(path.name[:_date_length], _date_format)
+        start_date = datetime.datetime.strptime(path.name[:_date_length], date_format)
         name = path.name[_date_length + 1:]
         return name, start_date
 
@@ -226,7 +227,7 @@ class ParentPicDir:
 
     def add(self, name: str, date: datetime.date, source: Union[Path, List[Path]]) -> PicDir:
         if self.get(name=name, date=date) is not None:
-            raise RuntimeError(f"picdir '{name}' with date {date.strftime(_date_format)} already exists in {self.path}")
+            raise RuntimeError(f"picdir '{name}' with date {date.strftime(date_format)} already exists in {self.path}")
         new_picdir = PicDir(path_or_parent=self.path, name=name, date=date, source=source)
         self._picdirs.append(new_picdir)
         return new_picdir
