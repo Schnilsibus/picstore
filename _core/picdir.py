@@ -1,7 +1,7 @@
 from pathlib import Path
 import datetime
 from typing import Tuple, List, Union, Iterator
-from shutil import copy2
+from shutil import copy2, move
 from tqdm import tqdm
 from json_sett import Settings
 from colorama import Fore, Style
@@ -200,6 +200,27 @@ class PicDir:
             raise ValueError(f"{str(directory)} is no directory")
         sub_directories = map(lambda d: d.parts[-1], directory.iterdir())
         return set(PicDir._all_sub_directories) <= set(sub_directories)
+
+    @staticmethod
+    def correct_directory_name(directory: Path) -> Path:
+        directory_name = directory.parts[-1]
+        parts = directory_name.replace("-", "_").split("_")
+        if len(parts) < 4:
+            return directory
+        try:
+            year = int(parts[0])
+            month = int(parts[1])
+            day = int(parts[2])
+        except ValueError:
+            return directory
+        if 0 <= year <= 99:
+            year += 2000
+        if year < 2000 or month < 0 or month > 12 or day < 0 or day > 31:
+            return directory
+        date = datetime.date(year=year, month=month, day=day)
+        new_name = f"{date.strftime(date_format)}_{''.join(parts[3:])}"
+        move(src=directory, dst=directory.parent / new_name)
+        return Path(new_name)
 
 
 class ParentPicDir:

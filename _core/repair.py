@@ -1,8 +1,7 @@
 from argparse import Namespace
 from pathlib import Path
-from picdir import PicDir, ParentPicDir, date_format
-import datetime
-import shutil
+from picdir import PicDir, ParentPicDir
+from picowner import Ownership
 
 # ROADMAP:
 # - fix dir name (try to convert current name to valid one)
@@ -26,42 +25,33 @@ def repair_all(parent_picdir: ParentPicDir) -> bool:
 
 def repair(directory: Path) -> bool:
     successful = True
+    new_directory = None
+    picdir = None
     if not PicDir.has_correct_name(directory=directory):
-        successful = rename(directory=directory)
-    if successful and not PicDir.contains_sub_directories(directory=directory):
-        successful = create_subdirectories(directory=directory)
+        new_directory = rename(directory=directory)
+        successful = PicDir.has_correct_name(directory=new_directory)
+    if successful and not PicDir.contains_sub_directories(directory=new_directory):
+        picdir = create_subdirectories(directory=directory)
+        successful = PicDir.contains_sub_directories(directory=picdir.path)
     if successful:
-        picdir = PicDir(path_or_parent=directory)
         successful = move_files(picdir=picdir)
     return successful
 
 
-def rename(directory: Path) -> bool:
-    directory_name = directory.parts[-1]
-    parts = directory_name.replace("-", "_").split("_")
-    if len(parts) < 4:
-        return False
-    try:
-        year = int(parts[0])
-        month = int(parts[1])
-        day = int(parts[2])
-    except ValueError:
-        return False
-    if 0 <= year <= 99:
-        year += 2000
-    if year < 2000 or month < 0 or month > 12 or day < 0 or day > 31:
-        return False
-    date = datetime.date(year=year, month=month, day=day)
-    new_name = f"{date.strftime(date_format)}_{''.join(parts[3:])}"
-    shutil.move(src=directory, dst=directory.parent / new_name)
+def rename(directory: Path) -> Path:
+    return PicDir.correct_directory_name(directory=directory)
 
 
-def create_subdirectories(directory: Path) -> bool:
-    picdir = PicDir(path_or_parent=directory, create_dirs=True)
-    return PicDir.contains_sub_directories(directory)
+def create_subdirectories(directory: Path) -> PicDir:
+    return PicDir(path_or_parent=directory, create_dirs=True)
 
 
-def move_files(picdir: PicDir) -> bool:
+def move_files(
+        picdir: PicDir,
+        owner: Ownership = Ownership.Undefined,
+        cli_input_file_by_file: bool = False,
+        use_meta_data: bool = True
+) -> bool:
     pass
 
 
