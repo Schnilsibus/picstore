@@ -3,7 +3,7 @@ import datetime
 from typing import Tuple, List, Union, Iterator
 from shutil import copy2, move
 from tqdm import tqdm
-from json_sett import Settings
+from pictype import pic_type, PicType
 from colorama import Fore, Style
 
 date_format = "%F"
@@ -15,11 +15,6 @@ _pic_count_length = 6
 _pic_count_limit = 100000
 _pic_count_exceeds_limit = ">=10^5"
 _status_length = 6
-
-
-settings = Settings(Path(__file__).parent.parent / "data" / "config.json")
-_raw_suffixes = settings.raw_types
-_std_suffixes = settings.std_types
 
 
 class PicDir:
@@ -153,14 +148,14 @@ class PicDir:
     def add_pictures(self, pictures: List[Path], display_tqdm: bool = True) -> int:
         if not type(pictures) == list or not all([issubclass(type(picture), Path) for picture in pictures]):
             raise TypeError("parameter 'pictures' must must be a list of 'pathlib.Path's")
-        to_copy = list(filter(lambda p: p.suffix.upper() in _raw_suffixes + _std_suffixes, pictures))
+        to_copy = list(filter(lambda p: pic_type(file=p) in [PicType.Raw, PicType.Std], pictures))
         current_file_names = list(map(lambda p: p.name, self._raw_files + self._std_files))
         to_copy = list(filter(lambda p: p not in current_file_names, to_copy))
         iterator = tqdm(to_copy, desc="copying files", unit="files") if display_tqdm else to_copy
         for picture in iterator:
-            if picture.suffix.upper() in _raw_suffixes:
+            if pic_type(file=picture) == PicType.Raw:
                 copy2(picture, self._directories["RAW"])
-            elif picture.suffix.upper() in _std_suffixes:
+            elif pic_type(file=picture) in PicType.Std:
                 copy2(picture, self._directories["STD"])
         self._sync_with_file_system()
         return len(to_copy)
@@ -175,8 +170,8 @@ class PicDir:
 
     def get_files_with_wrong_extension(self) -> Tuple[List, List]:
         self._sync_with_file_system()
-        invalid_raw_files = [file for file in self._raw_files if file.suffix.upper() not in _raw_suffixes]
-        invalid_std_files = [file for file in self._std_files if file.suffix.upper() not in _std_suffixes]
+        invalid_raw_files = [file for file in self._raw_files if not pic_type(file=file) == PicType.Raw]
+        invalid_std_files = [file for file in self._std_files if not pic_type(file=file) == PicType.Std]
         return invalid_raw_files, invalid_std_files
 
     @staticmethod

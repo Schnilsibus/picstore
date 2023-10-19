@@ -9,9 +9,11 @@ from repair import cli_repair
 # TODO: [make separate projects for pathlib_extended]
 # TODO: add doc strings
 # TODO: add repair command
-# TODO: maybe add check in picdir that checks if all files in RAW/STD are mine and all in OTHER are not mine (by looking at IPTC data and config.json)
+# TODO: maybe add check in picdir that checks if all files in RAW/STD are mine and all in OTHER are not mine (by looking at IPTC and EXIF? data and config.json)
 # TODO: add syncing capabilities maybe make that a total separate application
-
+# TODO: move picstore script to scripts
+# TODO: move all cmd files in sub dir?
+# TODO: move all important files in subdir?
 
 def main(args: Namespace):
     cmd = vars(args).pop("command")

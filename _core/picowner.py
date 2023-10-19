@@ -10,10 +10,12 @@ class Ownership(enum.Enum):
 
 
 def pic_ownership(picture: Path, use_metadata: bool) -> Ownership:
-    if not use_metadata:
-        return ask_ownership(item=picture)
-    else:
-        return evaluate_ownership(picture=picture)
+    owner = Ownership.Undefined
+    if use_metadata:
+        owner = evaluate_ownership(picture=picture)
+    if owner == Ownership.Undefined:
+        owner = ask_ownership(item=picture)
+    return owner
 
 
 def evaluate_ownership(picture: Path) -> Ownership:
