@@ -47,10 +47,7 @@ def create_subdirectories(directory: Path) -> PicDir:
 
 
 def move_files(
-        picdir: PicDir,
-        owner: Ownership = Ownership.Undefined,
-        cli_input_file_by_file: bool = False,
-        use_meta_data: bool = True
+        picdir: PicDir
 ) -> bool:
     pass
 

@@ -12,9 +12,9 @@
     ".JPEG",
     ".PNG"
   ],
-  "my_cameras": [
-    "Canon 77D",
-    "Nokia 7 Plus",
-    "Olympus ..."
+  "my_camera_models": [
+    "Canon EOS 77D",
+    "Nokia 7 plus",
+    "SZ-31MR"
   ]
 }
