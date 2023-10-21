@@ -6,7 +6,7 @@ from tqdm import tqdm
 from pictype import pic_type, PicType
 from colorama import Fore, Style
 
-date_format = "%F"
+date_format = "%Y-%m-%d"
 
 _tab = "   "
 _date_length = 10

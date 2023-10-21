@@ -1,9 +1,9 @@
 from argparse import Namespace
 import cli
-from create import cli_create
-from list import cli_list
-from view import cli_view
-from repair import cli_repair
+from commands.create import cli_create
+from commands.list import cli_list
+from commands.view import cli_view
+from commands.repair import cli_repair
 
 
 # TODO: [make separate projects for pathlib_extended]
