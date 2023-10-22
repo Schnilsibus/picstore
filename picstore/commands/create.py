@@ -2,11 +2,12 @@ from pathlib import Path
 import datetime
 from argparse import Namespace
 from typing import Union, List
-from json_sett import Settings
-from picstore.picdir import PicDir, ParentPicDir
+from picstore.picdir import PicDir
+from picstore.parentpicdir import ParentPicDir
+from picstore.config import config
 
-settings = Settings(Path(__file__).parent.parent.parent / "data" / "config.json")
-sources = map(Path, settings.sources)
+
+sources = map(Path, config.sources)
 
 
 def create(directory: Path, name: str, date: datetime.date, source: Union[Path, List[Path]] = None) -> PicDir:

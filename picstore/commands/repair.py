@@ -1,7 +1,8 @@
 from argparse import Namespace
 from pathlib import Path
-from shutil import copy2
-from picstore.picdir import PicDir, ParentPicDir
+from shutil import move
+from picstore.picdir import PicDir
+from picstore.parentpicdir import ParentPicDir
 from picstore.picowner import Ownership
 
 # ROADMAP:
@@ -21,23 +22,28 @@ from picstore.picowner import Ownership
 
 
 def repair_all(parent_picdir: ParentPicDir) -> bool:
+    repaired_all = True
     for directory in parent_picdir.path.iterdir():
-        repair(directory=directory)
+        repaired = repair(directory=directory)
+        if repaired_all:
+            repaired_all = repaired
+    return repaired_all
 
 
 def repair(directory: Path) -> bool:
-    successful = True
-    new_directory = None
     picdir = None
     if not PicDir.has_correct_name(directory=directory):
-        new_directory = rename(directory=directory)
-        successful = PicDir.has_correct_name(directory=new_directory)
-    if successful and not PicDir.contains_sub_directories(directory=new_directory):
+        directory = rename(directory=directory)
+        if not PicDir.has_correct_name(directory=directory):
+            return False
+    if not PicDir.contains_sub_directories(directory=directory):
         picdir = create_subdirectories(directory=directory)
-        successful = PicDir.contains_sub_directories(directory=picdir.path)
-    if successful:
-        successful = move_files(picdir=picdir)
-    return successful
+        if not PicDir.contains_sub_directories(directory=directory):
+            return False
+    if picdir is None:
+        picdir = PicDir(path_or_parent=directory)
+    move_files(picdir=picdir, owner=Ownership.Own)
+    return picdir.is_intact()
 
 
 def rename(directory: Path) -> Path:
@@ -55,15 +61,16 @@ def move_files(
     invalid_raw, invalid_std = picdir.get_files_with_wrong_extension()
     dest = picdir.path / "STD" if owner == Ownership.Own else picdir.path / "OTHR"
     for file in invalid_raw:
-        copy2(file, dest)
+        move(file, dest)
     dest = picdir.path / "RAW" if owner == Ownership.Own else picdir.path / "OTHR"
     for file in invalid_std:
-        copy2(file, dest)
+        print(f"{file} to {dest}")
+        move(file, dest)
+    return True
 
 
 def cli_repair(args: Namespace) -> None:
-    print(args)
-    # if args.parent:
-    #     repair_all(parent_picdir=ParentPicDir(directory=args.dir))
-    # else:
-    #     repair(directory=args.dir)
+    if args.parent:
+        repair_all(parent_picdir=ParentPicDir(directory=args.dir))
+    else:
+        repair(directory=args.dir)

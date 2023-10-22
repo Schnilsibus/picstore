@@ -1,13 +1,13 @@
 import enum
 from pathlib import Path
 from exiftool import ExifToolHelper
-from json_sett import Settings
 from typing import Tuple, Dict
-from picstore.picdir import PicDir, ParentPicDir
+from picstore.picdir import PicDir
+from picstore.parentpicdir import ParentPicDir
+from picstore.config import config
 
 
-settings = Settings(Path(__file__).parent.parent / "data" / "config.json")
-my_camera_models = settings.my_camera_models
+my_camera_models = config.my_camera_models
 
 
 class Ownership(enum.Enum):

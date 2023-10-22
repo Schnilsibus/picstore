@@ -1,10 +1,10 @@
 import enum
 from pathlib import Path
-from json_sett import Settings
+from picstore.config import config
 
-settings = Settings(Path(__file__).parent.parent / "data" / "config.json")
-raw_suffixes = settings.raw_types
-std_suffixes = settings.std_types
+
+raw_suffixes = config.raw_types
+std_suffixes = config.std_types
 
 
 class PicType(enum.Enum):

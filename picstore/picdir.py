@@ -1,10 +1,12 @@
 from pathlib import Path
 import datetime
-from typing import Tuple, List, Union, Iterator
+from typing import Tuple, List, Union
 from shutil import copy2, move
 from tqdm import tqdm
 from colorama import Fore, Style
 from picstore.pictype import pic_type, PicType
+from picstore.picowner import pic_ownership, Ownership
+from picstore.config import config
 
 date_format = "%Y-%m-%d"
 
@@ -15,6 +17,9 @@ _pic_count_length = 6
 _pic_count_limit = 100000
 _pic_count_exceeds_limit = ">=10^5"
 _status_length = 6
+
+raw_suffixes = config.raw_types
+std_suffixes = config.std_types
 
 
 class PicDir:
@@ -132,18 +137,21 @@ class PicDir:
     def num_std_files(self) -> int:
         return len(self._std_files)
 
-    def add(self, source: Union[Path, List[Path]], display_tqdm: bool = True) -> int:
+    def add(self, source: Union[Path, List[Path]], display_tqdm: bool = True, recursive: bool = True) -> int:
         if type(source) == list:
             return self.add_pictures(pictures=source, display_tqdm=display_tqdm)
         elif issubclass(type(source), Path):
-            return self.add_directory(directory=source, display_tqdm=display_tqdm)
+            return self.add_directory(directory=source, display_tqdm=display_tqdm, recursive=recursive)
         else:
             raise TypeError("parameter 'source' must ba a 'pathlib.Path' or a list of 'pathlib.Path's")
 
-    def add_directory(self, directory: Path, display_tqdm: bool = True) -> int:
+    def add_directory(self, directory: Path, display_tqdm: bool = True, recursive: bool = True) -> int:
         if not issubclass(type(directory), Path) or not directory.is_dir():
             raise TypeError("can only add existing directories")
-        return self.add_pictures(pictures=list(directory.iterdir()), display_tqdm=display_tqdm)
+        if not recursive:
+            return self.add_pictures(pictures=list(directory.iterdir()), display_tqdm=display_tqdm)
+        else:
+            all_suffixes =
 
     def add_pictures(self, pictures: List[Path], display_tqdm: bool = True) -> int:
         if not type(pictures) == list or not all([issubclass(type(picture), Path) for picture in pictures]):
@@ -173,6 +181,9 @@ class PicDir:
         invalid_raw_files = [file for file in self._raw_files if not pic_type(file=file) == PicType.Raw]
         invalid_std_files = [file for file in self._std_files if not pic_type(file=file) == PicType.Std]
         return invalid_raw_files, invalid_std_files
+
+    def move_files_with_wrong_extension(self, owner: Ownership) -> Tuple[int, int]:
+        raise NotImplementedError()
 
     @staticmethod
     def has_correct_name(directory: Path) -> bool:
@@ -216,42 +227,3 @@ class PicDir:
         new_name = f"{date.strftime(date_format)}_{''.join(parts[3:])}"
         move(src=directory, dst=directory.parent / new_name)
         return Path(new_name)
-
-
-class ParentPicDir:
-    def __init__(self, directory: Path):
-        self._path = directory
-        self._load_picdirs()
-
-    @property
-    def path(self) -> Path:
-        return self._path
-
-    def __iter__(self) -> Iterator[PicDir]:
-        return self._picdirs.__iter__()
-
-    def __getitem__(self, item) -> PicDir:
-        return self._picdirs.__getitem__(item)
-
-    def get(self, name: str, date: datetime.date = None) -> PicDir | None:
-        for picdir in self:
-            if date is None and picdir.name == name:
-                return picdir
-            elif date is not None and picdir.name == name and picdir.date == date:
-                return picdir
-        return None
-
-    def add(self, name: str, date: datetime.date, source: Union[Path, List[Path]]) -> PicDir:
-        if self.get(name=name, date=date) is not None:
-            raise RuntimeError(f"picdir '{name}' with date {date.strftime(date_format)} already exists in {self.path}")
-        new_picdir = PicDir(path_or_parent=self.path, name=name, date=date, source=source)
-        self._picdirs.append(new_picdir)
-        return new_picdir
-
-    def _load_picdirs(self) -> None:
-        self._picdirs = []
-        for path in self.path.iterdir():
-            try:
-                self._picdirs.append(PicDir(path_or_parent=path))
-            except Exception:
-                pass

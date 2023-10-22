@@ -3,7 +3,8 @@ from typing import Tuple, List
 from pathlib import Path
 from argparse import Namespace
 from colorama import Style, Fore
-from picstore.picdir import PicDir, ParentPicDir
+from picstore.picdir import PicDir
+from picstore.parentpicdir import ParentPicDir
 from picstore.cli import date_format
 
 

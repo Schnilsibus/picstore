@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 from typing import Callable
 from pathlib import Path
 from datetime import datetime, date
-from json_sett import Settings
+from picstore.config import config
 
 program_name = "picstore"
 description = "picstore is a cmd program that handles storage of pictures. " \
@@ -11,8 +11,7 @@ epilog = ""
 
 date_format = "%d-%m-%y"
 
-settings = Settings(file=Path(__file__).parent.parent / "data" / "config.json")
-default_dir = settings.default_dir
+default_dir = config.default_dir
 
 
 class PicParser(ArgumentParser):
