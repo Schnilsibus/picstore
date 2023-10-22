@@ -8,24 +8,24 @@ _raw_suffixes = config.raw_types
 _std_suffixes = config.std_types
 
 
-class PicType(enum.Enum):
+class Category(enum.Enum):
     Std = enum.auto()
     Raw = enum.auto()
     Undefined = enum.auto()
 
 
-def pic_type(file: Path) -> PicType:
+def category(file: Path) -> Category:
     suffix = file.suffix.upper()
     if suffix in _raw_suffixes:
-        return PicType.Raw
+        return Category.Raw
     elif suffix in _std_suffixes:
-        return PicType.Std
+        return Category.Std
     else:
-        return PicType.Undefined
+        return Category.Undefined
 
 
-def pic_types(files: Tuple[Path]) -> Dict[Path, PicType]:
+def categories(files: Tuple[Path]) -> Dict[Path, Category]:
     types = {}
     for file in files:
-        types[file] = pic_type(file=file)
+        types[file] = category(file=file)
     return types

@@ -47,7 +47,7 @@ def repair(directory: Path) -> bool:
 
 
 def rename(directory: Path) -> Path:
-    return PicDir.correct_directory_name(directory=directory)
+    return PicDir.rename_directory(directory=directory)
 
 
 def create_subdirectories(directory: Path) -> PicDir:
@@ -56,17 +56,17 @@ def create_subdirectories(directory: Path) -> PicDir:
 
 def move_files(
         picdir: PicDir,
-        owner: Ownership
+        owner: Ownership,
+
 ) -> bool:
-    invalid_raw, invalid_std = picdir.get_files_with_wrong_extension()
-    dest = picdir.path / "STD" if owner == Ownership.Own else picdir.path / "OTHR"
-    for file in invalid_raw:
-        move(file, dest)
-    dest = picdir.path / "RAW" if owner == Ownership.Own else picdir.path / "OTHR"
-    for file in invalid_std:
-        print(f"{file} to {dest}")
-        move(file, dest)
-    return True
+    invalid_raw_files, invalid_std_files = picdir.wrong_files()
+    top_level_files = tuple(picdir.path.iterdir())
+    picdir.add_pictures(pictures=invalid_raw_files + invalid_std_files + top_level_files,
+                        display_tqdm=display_tqdm,
+                        picture_owner=owner,
+                        use_cli=use_cli,
+                        use_metadata=use_metadata,
+                        copy=False)
 
 
 def cli_repair(args: Namespace) -> None:

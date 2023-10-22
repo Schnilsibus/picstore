@@ -1,11 +1,11 @@
 from pathlib import Path
 import datetime
-from typing import Tuple, List, Union
+from typing import Tuple, List, Union, Literal, Optional, Dict
 import shutil
 from tqdm import tqdm
 from colorama import Fore, Style
-import picstore.pictype as pictype
-import picstore.picowner as picowner
+from picstore.piccategory import Category, categories
+from picstore.picowner import Ownership, owners
 from picstore.config import config
 
 date_format = "%Y-%m-%d"
@@ -28,17 +28,17 @@ class PicDir:
     def __init__(
             self,
             path_or_parent: Path,
-            name: str = None,
-            date: datetime.date = None,
-            source: Union[Path, List[Path]] = None,
+            name: Optional[str] = None,
+            date: Optional[datetime.date] = None,
+            source: Optional[Union[Path, List[Path]]] = None,
             display_tqdm: bool = True,
             create_dirs: bool = False
      ):
         if (name is None and date is not None) or (name is not None and date is None):
             raise TypeError("name and date must either both have a value or both be None")
-        self._directories = {}
-        self._raw_files = []
-        self._std_files = []
+        self._directories: Dict[str, Path] = {}
+        self._raw_files: List[Path] = []
+        self._std_files: List[Path] = []
         if name is None:
             self._load(path=path_or_parent, create_dirs=create_dirs)
         else:
@@ -157,7 +157,7 @@ class PicDir:
             self,
             pictures: Tuple[Path],
             display_tqdm: bool = True,
-            owner: picowner.Ownership = None,
+            picture_owner: Optional[Ownership] = None,
             use_metadata: bool = True,
             use_cli: bool = True,
             copy: bool = False
@@ -166,23 +166,26 @@ class PicDir:
             raise TypeError("parameter 'pictures' must must be a list of 'pathlib.Path's")
         count = 0
         copy_or_move = shutil.copy2 if copy else shutil.move
-        types = pictype.pic_types(files=pictures)
-        owners = None
-        if owner is None:
-            owners = picowner.pic_owners(pictures=pictures, use_cli=use_cli, use_metadata=use_metadata)
+        types = categories(files=pictures)
+        picture_owners = None
+        if picture_owner is None:
+            picture_owners = owners(pictures=pictures, use_cli=use_cli, use_metadata=use_metadata)
         tqdm_desc = "copying files" if copy else "moving files"
         iterator = tqdm(pictures, desc=tqdm_desc, unit="files") if display_tqdm else pictures
         for picture in iterator:
-            pic_owner = owner if owner is not None else owners[picture]
-            pic_type = types[picture]
-            if pic_type == pictype.PicType.Undefined or pic_owner == picowner.Ownership.Undefined:
+            picture_owner = picture_owner if picture_owner is not None else picture_owners[picture]
+            picture_type = types[picture]
+            dest = picture.parent
+            if picture_type == Category.Undefined or picture_owner == Ownership.Undefined:
                 continue
-            elif pic_owner == picowner.Ownership.Other:
-                copy_or_move(picture, self._directories["OTHR"])
-            elif pic_owner == picowner.Ownership.Own and pic_type == pictype.PicType.Raw:
-                copy_or_move(picture, self._directories["RAW"])
-            elif pic_owner == picowner.Ownership.Own and pic_type == pictype.PicType.Std:
-                copy_or_move(picture, self._directories["STD"])
+            elif picture_owner == Ownership.Other:
+                dest = self._directories["OTHR"]
+            elif picture_owner == Ownership.Own and picture_type == Category.Raw:
+                dest = self._directories["RAW"]
+            elif picture_owner == Ownership.Own and picture_type == Category.Std:
+                dest = self._directories["STD"]
+            if picture not in dest.iterdir():
+                copy_or_move(picture, dest)
             count += 1
         return count
 
@@ -191,17 +194,38 @@ class PicDir:
             return False
         if not PicDir.contains_sub_directories(directory=self.path):
             return False
-        invalid_raw_files, invalid_std_files = self.get_files_with_wrong_extension()
-        return len(invalid_raw_files) + len(invalid_std_files) == 0
+        if not len(self.wrong_category_files(directory="RAW")) == 0:
+            return False
+        if not len(self.wrong_category_files(directory="STD")) == 0:
+            return False
+        if not len(self.wrong_category_files(directory="TOP")) == 0:
+            return False
+        return True
 
-    def get_files_with_wrong_extension(self) -> Tuple[List, List]:
+    def wrong_category_files(self, directory: Literal["RAW", "STD", "TOP"]) -> Tuple[Path]:
         self._sync_with_file_system()
-        invalid_raw_files = [file for file in self._raw_files if not pictype.pic_type(file=file) == pictype.PicType.Raw]
-        invalid_std_files = [file for file in self._std_files if not pictype.pic_type(file=file) == pictype.PicType.Std]
-        return invalid_raw_files, invalid_std_files
+        all_files = tuple(self._raw_files if directory == "RAW" else self._std_files)
+        if directory == "TOP":
+            all_files = tuple(self.path.iterdir())
+        all_categories = categories(files=all_files)
+        if directory == "RAW":
+            return tuple(filter(lambda file: not all_categories[file] == Category.Raw, all_files))
+        elif directory == "STD":
+            return tuple(filter(lambda file: not all_categories[file] == Category.Std, all_files))
+        elif directory == "TOP":
+            return tuple(filter(lambda file: not all_categories[file] == Category.Undefined, all_files))
 
-    def move_files_with_wrong_extension(self, owner: picowner.Ownership) -> Tuple[int, int]:
-        raise NotImplementedError()
+    def wrong_ownership_files(self, directory: Literal["RAW", "STD", "OTHR"]) -> Tuple[Tuple[Path], Tuple[Path]]:
+        self._sync_with_file_system()
+        all_files = tuple(self._raw_files if directory == "RAW" else self._std_files)
+        if directory == "OTHR":
+            all_files = tuple(self._directories["OTHR"].iterdir())
+        all_owners = owners(pictures=all_files, use_cli=False, use_metadata=True)
+        undefined_files = tuple(filter(lambda file: all_owners[file] == Ownership.Undefined, all_files))
+        if directory == "RAW" or directory == "STD":
+            return tuple(filter(lambda file: all_owners[file] == Ownership.Other, all_files)), undefined_files
+        elif directory == "OTHR":
+            return tuple(filter(lambda file: all_owners[file] == Ownership.Own, all_files)), undefined_filesö
 
     @staticmethod
     def has_correct_name(directory: Path) -> bool:
@@ -226,7 +250,7 @@ class PicDir:
         return set(PicDir._all_sub_directories) <= set(sub_directories)
 
     @staticmethod
-    def correct_directory_name(directory: Path) -> Path:
+    def rename_directory(directory: Path) -> Path:
         directory_name = directory.parts[-1]
         parts = directory_name.replace("-", "_").split("_")
         if len(parts) < 4:

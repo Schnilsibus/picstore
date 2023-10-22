@@ -4,6 +4,9 @@ from datetime import datetime
 from picstore.picdir import PicDir, date_format
 
 
+# TODO: implement proper indexable object: len; reverse etc. --> use appropriate SuperClass "Sequence"?
+
+
 class ParentPicDir:
     def __init__(self, directory: Path):
         self._path = directory

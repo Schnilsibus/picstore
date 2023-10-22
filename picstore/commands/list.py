@@ -5,6 +5,9 @@ from picstore.picdir import PicDir
 from picstore.parentpicdir import ParentPicDir
 
 
+# TODO: display more wrong files: wrong category also in top-level dir; wrong owners
+
+
 def list_picdirs(directory: Path, sort: Literal["date", "name", "raw", "std"] = None) -> Tuple[PicDir]:
     picdirs = list(ParentPicDir(directory=directory))
     if sort is not None:

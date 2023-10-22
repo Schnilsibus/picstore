@@ -16,20 +16,20 @@ class Ownership(enum.Enum):
     Undefined = enum.auto()
 
 
-def pic_owner(picture: Path, use_metadata: bool, use_cli: bool) -> Ownership:
-    owner = Ownership.Undefined
+def owner(picture: Path, use_metadata: bool, use_cli: bool) -> Ownership:
+    picture_owner = Ownership.Undefined
     if use_metadata:
-        owner = evaluate_owner(picture=picture)
-    if owner == Ownership.Undefined and use_cli:
-        owner = ask_owner(item=picture)
-    return owner
+        picture_owner = evaluate_owner(picture=picture)
+    if picture_owner == Ownership.Undefined and use_cli:
+        picture_owner = ask_owner(item=picture)
+    return picture_owner
 
 
-def pic_owners(pictures: Tuple[Path], use_metadata: bool, use_cli: bool) -> Dict[Path, Ownership]:
-    owners = {}
+def owners(pictures: Tuple[Path], use_metadata: bool, use_cli: bool) -> Dict[Path, Ownership]:
+    picture_owners = {}
     for picture in pictures:
-        owners[picture] = pic_owner(picture=picture, use_metadata=use_metadata, use_cli=use_cli)
-    return owners
+        picture_owners[picture] = pic_owner(picture=picture, use_metadata=use_metadata, use_cli=use_cli)
+    return picture_owners
 
 
 def evaluate_owner(picture: Path) -> Ownership:
@@ -43,10 +43,10 @@ def evaluate_owner(picture: Path) -> Ownership:
 
 
 def evaluate_owners(pictures: Tuple[Path]) -> Dict[Path, Ownership]:
-    owners = {}
+    picture_owners = {}
     for picture in pictures:
-        owners[picture] = evaluate_owner(picture=picture)
-    return owners
+        picture_owners[picture] = evaluate_owner(picture=picture)
+    return picture_owners
 
 
 def ask_owner(item: Path | PicDir | ParentPicDir) -> Ownership:
@@ -56,10 +56,10 @@ def ask_owner(item: Path | PicDir | ParentPicDir) -> Ownership:
     if not type(item) == Path:
         path = item.path
     while True:
-        owner = input(f"{prefix}{path}{suffix}").upper()
-        if owner == "OWN":
+        picture_owner = input(f"{prefix}{path}{suffix}").upper()
+        if picture_owner == "OWN":
             return Ownership.Own
-        elif owner == "OTHR":
+        elif picture_owner == "OTHR":
             return Ownership.Other
         else:
-            print(f"\t -> {owner} is not a valid input. Try again.")
+            print(f"\t -> {picture_owner} is not a valid input. Try again.")

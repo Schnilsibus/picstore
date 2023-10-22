@@ -14,7 +14,7 @@ def view(directory: Path, name: str, date: datetime.date = None) -> Tuple[PicDir
     if picdir is None:
         date_str = "" if date is None else f"with date {date.strftime(date_format)}"
         raise RuntimeError(f"picdir '{name}' {date_str} not found in {directory}")
-    invalid_raw_files, invalid_std_files = picdir.get_files_with_wrong_extension()
+    invalid_raw_files, invalid_std_files = picdir.wrong_files()
     return picdir, invalid_raw_files, invalid_std_files
 
 
