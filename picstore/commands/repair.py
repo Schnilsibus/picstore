@@ -1,9 +1,9 @@
 from argparse import Namespace
 from pathlib import Path
-from shutil import move
 from picstore.picdir import PicDir
 from picstore.parentpicdir import ParentPicDir
 from picstore.picowner import Ownership
+
 
 # ROADMAP:
 # - fix dir name (try to convert current name to valid one)
@@ -16,7 +16,7 @@ from picstore.picowner import Ownership
 #   - once for whole parent_picdir (as cli arg)
 #   - once for each pic dir (via cli input while running)
 #   - for each file (via cli input while running)
-#   - by the files metadata (IPTC) e.g. camera modell --> define my camera modells in config.json
+#   - by the files metadata (IPTC) e.g. camera model --> define my camera modells in config.json
 #       --> use this library:  https://pypi.org/project/IPTCInfo3/
 # - success
 
@@ -56,21 +56,25 @@ def create_subdirectories(directory: Path) -> PicDir:
 
 def move_files(
         picdir: PicDir,
-        owner: Ownership,
-
-) -> bool:
-    invalid_raw_files, invalid_std_files = picdir.wrong_files()
-    top_level_files = tuple(picdir.path.iterdir())
-    picdir.add_pictures(pictures=invalid_raw_files + invalid_std_files + top_level_files,
-                        display_tqdm=display_tqdm,
-                        picture_owner=owner,
-                        use_cli=use_cli,
-                        use_metadata=use_metadata,
-                        copy=False)
+        owner: Ownership = None,
+        display_tqdm: bool = True,
+        use_cli: bool = False,
+        use_metadata: bool = True
+) -> int:
+    files = picdir.wrong_category_files(directory="RAW")
+    files += picdir.wrong_category_files(directory="STD")
+    files += picdir.wrong_category_files(directory="TOP")
+    return picdir.add_pictures(pictures=tuple(files),
+                               display_tqdm=display_tqdm,
+                               picture_owner=owner,
+                               use_cli=use_cli,
+                               use_metadata=use_metadata,
+                               copy=False)
 
 
 def cli_repair(args: Namespace) -> None:
-    if args.parent:
-        repair_all(parent_picdir=ParentPicDir(directory=args.dir))
-    else:
+    print(args)
+    if args.picdir:
         repair(directory=args.dir)
+    else:
+        repair_all(parent_picdir=ParentPicDir(directory=args.dir))

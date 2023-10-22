@@ -7,7 +7,7 @@ from picstore.config import config
 program_name = "picstore"
 description = "picstore is a cmd program that handles storage of pictures. " \
               "It's core functionality is to organize pictures in different directories."
-epilog = ""
+epilog = "'picstore <command> -h' for detailed information for a command."
 
 date_format = "%d-%m-%y"
 
@@ -64,6 +64,7 @@ def view_parser_factory(parser: ArgumentParser) -> None:
     parser.add_argument("-dir",
                         help=f"dir in which all pic dirs should be listed (default: {str(_default_dir)})",
                         type=Path,
+                        dest="directory",
                         default=_default_dir)
     parser.add_argument("-d", "--date",
                         help="the date (DD-MM-YY) of the picdir",
@@ -75,16 +76,9 @@ def repair_parser_factory(parser: ArgumentParser) -> None:
                         help="path to the (parent) picdir that needs repairing.",
                         type=Path,
                         default=_default_dir)
-    pic_or_parent_group = parser.add_mutually_exclusive_group()
-    pic_or_parent_group.add_argument("--parent",
-                                     help="indicate that 'dir' argument points to the parent picdir",
-                                     action="store_true",
-                                     dest="parent",
-                                     default=True)
-    pic_or_parent_group.add_argument("--picdir",
-                                     help="indicate that 'dir' argument points to a picdir",
-                                     action="store_false",
-                                     dest="parent")
+    parser.add_argument("--picdir",
+                        help="indicate that 'dir' argument points to a picdir",
+                        action="store_true")
 
 
 def construct_parser() -> PicParser:

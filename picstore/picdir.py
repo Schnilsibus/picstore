@@ -162,6 +162,7 @@ class PicDir:
             use_cli: bool = True,
             copy: bool = False
     ) -> int:
+        # TODO: construct a {source. dest} dict with only files that can be moved an only then move them and display tqdm --> two for loops
         if not type(pictures) == tuple or not all([issubclass(type(picture), Path) for picture in pictures]):
             raise TypeError("parameter 'pictures' must must be a list of 'pathlib.Path's")
         count = 0
@@ -184,7 +185,7 @@ class PicDir:
                 dest = self._directories["RAW"]
             elif picture_owner == Ownership.Own and picture_type == Category.Std:
                 dest = self._directories["STD"]
-            if picture not in dest.iterdir():
+            if picture.name not in map(lambda p: p.name, dest.iterdir()):
                 copy_or_move(picture, dest)
             count += 1
         return count
@@ -225,7 +226,7 @@ class PicDir:
         if directory == "RAW" or directory == "STD":
             return tuple(filter(lambda file: all_owners[file] == Ownership.Other, all_files)), undefined_files
         elif directory == "OTHR":
-            return tuple(filter(lambda file: all_owners[file] == Ownership.Own, all_files)), undefined_filesö
+            return tuple(filter(lambda file: all_owners[file] == Ownership.Own, all_files)), undefined_files
 
     @staticmethod
     def has_correct_name(directory: Path) -> bool:
@@ -238,7 +239,7 @@ class PicDir:
             int(name[:4])
             int(name[5:7])
             int(name[8:10])
-        except AssertionError | ValueError:
+        except BaseException:
             return False
         return True
 

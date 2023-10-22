@@ -2,8 +2,6 @@ import enum
 from pathlib import Path
 from exiftool import ExifToolHelper
 from typing import Tuple, Dict
-from picstore.picdir import PicDir
-from picstore.parentpicdir import ParentPicDir
 from picstore.config import config
 
 
@@ -28,7 +26,7 @@ def owner(picture: Path, use_metadata: bool, use_cli: bool) -> Ownership:
 def owners(pictures: Tuple[Path], use_metadata: bool, use_cli: bool) -> Dict[Path, Ownership]:
     picture_owners = {}
     for picture in pictures:
-        picture_owners[picture] = pic_owner(picture=picture, use_metadata=use_metadata, use_cli=use_cli)
+        picture_owners[picture] = owner(picture=picture, use_metadata=use_metadata, use_cli=use_cli)
     return picture_owners
 
 
@@ -49,17 +47,19 @@ def evaluate_owners(pictures: Tuple[Path]) -> Dict[Path, Ownership]:
     return picture_owners
 
 
-def ask_owner(item: Path | PicDir | ParentPicDir) -> Ownership:
-    prefix = "please select ownership for item "
-    suffix = " ['OWN' / 'OTHR']: "
-    path = item
-    if not type(item) == Path:
-        path = item.path
+def ask_owner(item: Path) -> Ownership:
     while True:
-        picture_owner = input(f"{prefix}{path}{suffix}").upper()
+        picture_owner = input(f"please select ownership for item {item} ['OWN' / 'OTHR']: ").upper()
         if picture_owner == "OWN":
             return Ownership.Own
         elif picture_owner == "OTHR":
             return Ownership.Other
         else:
             print(f"\t -> {picture_owner} is not a valid input. Try again.")
+
+
+def ask_owners(pictures: Tuple[Path]) -> Dict[Path, Ownership]:
+    picture_owners = {}
+    for picture in pictures:
+        picture_owners[picture] = ask_owner(item=picture)
+    return picture_owners
