@@ -1,11 +1,11 @@
 from pathlib import Path
 import datetime
 from typing import Tuple, List, Union
-from shutil import copy2, move
+import shutil
 from tqdm import tqdm
 from colorama import Fore, Style
-from picstore.pictype import pic_type, PicType
-from picstore.picowner import pic_ownership, Ownership
+import picstore.pictype as pictype
+import picstore.picowner as picowner
 from picstore.config import config
 
 date_format = "%Y-%m-%d"
@@ -18,8 +18,8 @@ _pic_count_limit = 100000
 _pic_count_exceeds_limit = ">=10^5"
 _status_length = 6
 
-raw_suffixes = config.raw_types
-std_suffixes = config.std_types
+_raw_suffixes = config.raw_types
+_std_suffixes = config.std_types
 
 
 class PicDir:
@@ -137,8 +137,8 @@ class PicDir:
     def num_std_files(self) -> int:
         return len(self._std_files)
 
-    def add(self, source: Union[Path, List[Path]], display_tqdm: bool = True, recursive: bool = True) -> int:
-        if type(source) == list:
+    def add(self, source: Union[Path, Tuple[Path]], display_tqdm: bool = True, recursive: bool = True) -> int:
+        if type(source) == tuple:
             return self.add_pictures(pictures=source, display_tqdm=display_tqdm)
         elif issubclass(type(source), Path):
             return self.add_directory(directory=source, display_tqdm=display_tqdm, recursive=recursive)
@@ -149,24 +149,42 @@ class PicDir:
         if not issubclass(type(directory), Path) or not directory.is_dir():
             raise TypeError("can only add existing directories")
         if not recursive:
-            return self.add_pictures(pictures=list(directory.iterdir()), display_tqdm=display_tqdm)
+            return self.add_pictures(pictures=tuple(directory.iterdir()), display_tqdm=display_tqdm)
         else:
-            all_suffixes =
+            return self.add_pictures(pictures=tuple(directory.rglob("*.*")), display_tqdm=display_tqdm)
 
-    def add_pictures(self, pictures: List[Path], display_tqdm: bool = True) -> int:
-        if not type(pictures) == list or not all([issubclass(type(picture), Path) for picture in pictures]):
+    def add_pictures(
+            self,
+            pictures: Tuple[Path],
+            display_tqdm: bool = True,
+            owner: picowner.Ownership = None,
+            use_metadata: bool = True,
+            use_cli: bool = True,
+            copy: bool = False
+    ) -> int:
+        if not type(pictures) == tuple or not all([issubclass(type(picture), Path) for picture in pictures]):
             raise TypeError("parameter 'pictures' must must be a list of 'pathlib.Path's")
-        to_copy = list(filter(lambda p: pic_type(file=p) in [PicType.Raw, PicType.Std], pictures))
-        current_file_names = list(map(lambda p: p.name, self._raw_files + self._std_files))
-        to_copy = list(filter(lambda p: p not in current_file_names, to_copy))
-        iterator = tqdm(to_copy, desc="copying files", unit="files") if display_tqdm else to_copy
+        count = 0
+        copy_or_move = shutil.copy2 if copy else shutil.move
+        types = pictype.pic_types(files=pictures)
+        owners = None
+        if owner is None:
+            owners = picowner.pic_owners(pictures=pictures, use_cli=use_cli, use_metadata=use_metadata)
+        tqdm_desc = "copying files" if copy else "moving files"
+        iterator = tqdm(pictures, desc=tqdm_desc, unit="files") if display_tqdm else pictures
         for picture in iterator:
-            if pic_type(file=picture) == PicType.Raw:
-                copy2(picture, self._directories["RAW"])
-            elif pic_type(file=picture) in PicType.Std:
-                copy2(picture, self._directories["STD"])
-        self._sync_with_file_system()
-        return len(to_copy)
+            pic_owner = owner if owner is not None else owners[picture]
+            pic_type = types[picture]
+            if pic_type == pictype.PicType.Undefined or pic_owner == picowner.Ownership.Undefined:
+                continue
+            elif pic_owner == picowner.Ownership.Other:
+                copy_or_move(picture, self._directories["OTHR"])
+            elif pic_owner == picowner.Ownership.Own and pic_type == pictype.PicType.Raw:
+                copy_or_move(picture, self._directories["RAW"])
+            elif pic_owner == picowner.Ownership.Own and pic_type == pictype.PicType.Std:
+                copy_or_move(picture, self._directories["STD"])
+            count += 1
+        return count
 
     def is_intact(self) -> bool:
         if not PicDir.has_correct_name(directory=self.path):
@@ -178,11 +196,11 @@ class PicDir:
 
     def get_files_with_wrong_extension(self) -> Tuple[List, List]:
         self._sync_with_file_system()
-        invalid_raw_files = [file for file in self._raw_files if not pic_type(file=file) == PicType.Raw]
-        invalid_std_files = [file for file in self._std_files if not pic_type(file=file) == PicType.Std]
+        invalid_raw_files = [file for file in self._raw_files if not pictype.pic_type(file=file) == pictype.PicType.Raw]
+        invalid_std_files = [file for file in self._std_files if not pictype.pic_type(file=file) == pictype.PicType.Std]
         return invalid_raw_files, invalid_std_files
 
-    def move_files_with_wrong_extension(self, owner: Ownership) -> Tuple[int, int]:
+    def move_files_with_wrong_extension(self, owner: picowner.Ownership) -> Tuple[int, int]:
         raise NotImplementedError()
 
     @staticmethod
@@ -225,5 +243,5 @@ class PicDir:
             return directory
         date = datetime.date(year=year, month=month, day=day)
         new_name = f"{date.strftime(date_format)}_{''.join(parts[3:])}"
-        move(src=directory, dst=directory.parent / new_name)
+        shutil.move(src=directory, dst=directory.parent / new_name)
         return Path(new_name)

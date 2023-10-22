@@ -11,7 +11,7 @@ epilog = ""
 
 date_format = "%d-%m-%y"
 
-default_dir = config.default_dir
+_default_dir = config.default_dir
 
 
 class PicParser(ArgumentParser):
@@ -34,7 +34,7 @@ def create_parser_factory(parser: ArgumentParser) -> None:
     parser.add_argument("-dir", "--parent-dir",
                         help=f"where to create the new picdir",
                         type=Path,
-                        default=default_dir,
+                        default=_default_dir,
                         dest="dir")
     parser.add_argument("-d", "--date",
                         help="the date (DD-MM-YY) of the new picdir",
@@ -50,9 +50,9 @@ def create_parser_factory(parser: ArgumentParser) -> None:
 
 def list_parser_factory(parser: ArgumentParser) -> None:
     parser.add_argument("-dir",
-                        help=f"dir in which all pic dirs should be listed (default: {str(default_dir)})",
+                        help=f"dir in which all pic dirs should be listed (default: {str(_default_dir)})",
                         type=Path,
-                        default=default_dir)
+                        default=_default_dir)
     parser.add_argument("-s", "--sort",
                         help="sort the output",
                         choices=["date", "name", "raw", "std"])
@@ -62,9 +62,9 @@ def view_parser_factory(parser: ArgumentParser) -> None:
     parser.add_argument("name",
                         help="name of the picdir")
     parser.add_argument("-dir",
-                        help=f"dir in which all pic dirs should be listed (default: {str(default_dir)})",
+                        help=f"dir in which all pic dirs should be listed (default: {str(_default_dir)})",
                         type=Path,
-                        default=default_dir)
+                        default=_default_dir)
     parser.add_argument("-d", "--date",
                         help="the date (DD-MM-YY) of the picdir",
                         type=lambda s: datetime.strptime(s, date_format))
@@ -74,7 +74,7 @@ def repair_parser_factory(parser: ArgumentParser) -> None:
     parser.add_argument("dir",
                         help="path to the (parent) picdir that needs repairing.",
                         type=Path,
-                        default=default_dir)
+                        default=_default_dir)
     pic_or_parent_group = parser.add_mutually_exclusive_group()
     pic_or_parent_group.add_argument("--parent",
                                      help="indicate that 'dir' argument points to the parent picdir",

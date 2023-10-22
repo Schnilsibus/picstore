@@ -7,7 +7,7 @@ from picstore.parentpicdir import ParentPicDir
 from picstore.config import config
 
 
-sources = map(Path, config.sources)
+_sources = map(Path, config.sources)
 
 
 def create(directory: Path, name: str, date: datetime.date, source: Union[Path, List[Path]] = None) -> PicDir:
@@ -23,7 +23,7 @@ def cli_create(args: Namespace) -> None:
             new_picdir = create(directory=args.dir, name=args.name, date=args.date, source=args.source)
         else:
             files = []
-            for source in sources:
+            for source in _sources:
                 if source.is_dir():
                     files.extend(source.iterdir())
             new_picdir = create(directory=args.dir, name=args.name, date=args.date, source=files)
