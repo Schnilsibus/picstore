@@ -4,7 +4,6 @@ from pathlib import Path
 from datetime import datetime, date
 from json_sett import Settings
 
-
 program_name = "picstore"
 description = "picstore is a cmd program that handles storage of pictures. " \
               "It's core functionality is to organize pictures in different directories."
@@ -72,6 +71,23 @@ def view_parser_factory(parser: ArgumentParser) -> None:
                         type=lambda s: datetime.strptime(s, date_format))
 
 
+def repair_parser_factory(parser: ArgumentParser) -> None:
+    parser.add_argument("dir",
+                        help="path to the (parent) picdir that needs repairing.",
+                        type=Path,
+                        default=default_dir)
+    pic_or_parent_group = parser.add_mutually_exclusive_group()
+    pic_or_parent_group.add_argument("--parent",
+                                     help="indicate that 'dir' argument points to the parent picdir",
+                                     action="store_true",
+                                     dest="parent",
+                                     default=True)
+    pic_or_parent_group.add_argument("--picdir",
+                                     help="indicate that 'dir' argument points to a picdir",
+                                     action="store_false",
+                                     dest="parent")
+
+
 def construct_parser() -> PicParser:
     parser = PicParser()
     subparsers_action = parser.add_subparsers(title="commands",
@@ -85,6 +101,9 @@ def construct_parser() -> PicParser:
                                  formatter_class=ArgumentDefaultsHelpFormatter)
     subparsers_action.add_parser(name="view",
                                  parser_factory=view_parser_factory,
+                                 formatter_class=ArgumentDefaultsHelpFormatter)
+    subparsers_action.add_parser(name="repair",
+                                 parser_factory=repair_parser_factory,
                                  formatter_class=ArgumentDefaultsHelpFormatter)
     return parser
 

@@ -2,6 +2,7 @@ from argparse import Namespace
 from pathlib import Path
 from picdir import PicDir, ParentPicDir
 from picowner import Ownership
+from shutil import copy2
 
 # ROADMAP:
 # - fix dir name (try to convert current name to valid one)
@@ -20,7 +21,8 @@ from picowner import Ownership
 
 
 def repair_all(parent_picdir: ParentPicDir) -> bool:
-    pass
+    for directory in parent_picdir.path.iterdir():
+        repair(directory=directory)
 
 
 def repair(directory: Path) -> bool:
@@ -47,10 +49,21 @@ def create_subdirectories(directory: Path) -> PicDir:
 
 
 def move_files(
-        picdir: PicDir
+        picdir: PicDir,
+        owner: Ownership
 ) -> bool:
-    pass
+    invalid_raw, invalid_std = picdir.get_files_with_wrong_extension()
+    dest = picdir.path / "STD" if owner == Ownership.Own else picdir.path / "OTHR"
+    for file in invalid_raw:
+        copy2(file, dest)
+    dest = picdir.path / "RAW" if owner == Ownership.Own else picdir.path / "OTHR"
+    for file in invalid_std:
+        copy2(file, dest)
 
 
 def cli_repair(args: Namespace) -> None:
-    pass
+    print(args)
+    # if args.parent:
+    #     repair_all(parent_picdir=ParentPicDir(directory=args.dir))
+    # else:
+    #     repair(directory=args.dir)

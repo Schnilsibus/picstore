@@ -7,7 +7,7 @@ from typing import Tuple, Dict
 
 
 settings = Settings(Path(__file__).parent.parent / "data" / "config.json")
-my_camera_models = Settings.my_camera_models
+my_camera_models = settings.my_camera_models
 
 
 class Ownership(enum.Enum):
