@@ -1,9 +1,9 @@
 import enum
-from picdir import PicDir, ParentPicDir
 from pathlib import Path
 from exiftool import ExifToolHelper
 from json_sett import Settings
 from typing import Tuple, Dict
+from picstore.picdir import PicDir, ParentPicDir
 
 
 settings = Settings(Path(__file__).parent.parent / "data" / "config.json")

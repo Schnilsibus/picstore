@@ -3,7 +3,7 @@ from picstore.commands.create import cli_create
 from picstore.commands.list import cli_list
 from picstore.commands.view import cli_view
 from picstore.commands.repair import cli_repair
-import cli
+import picstore.cli as cli
 
 
 # TODO: [make separate projects for pathlib_extended]

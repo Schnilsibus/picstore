@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import Tuple, List
 from pathlib import Path
-from picdir import PicDir, ParentPicDir
-from cli import date_format
 from argparse import Namespace
 from colorama import Style, Fore
+from picstore.picdir import PicDir, ParentPicDir
+from picstore.cli import date_format
 
 
 def view(directory: Path, name: str, date: datetime.date = None) -> Tuple[PicDir, List[Path], List[Path]]:

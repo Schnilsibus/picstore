@@ -1,7 +1,7 @@
 from argparse import Namespace
 from typing import Literal, Tuple
-from picdir import PicDir, ParentPicDir
 from pathlib import Path
+from picstore.picdir import PicDir, ParentPicDir
 
 
 def list_picdirs(directory: Path, sort: Literal["date", "name", "raw", "std"] = None) -> Tuple[PicDir]:

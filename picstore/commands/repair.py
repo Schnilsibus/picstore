@@ -1,8 +1,8 @@
 from argparse import Namespace
 from pathlib import Path
-from picdir import PicDir, ParentPicDir
-from picowner import Ownership
 from shutil import copy2
+from picstore.picdir import PicDir, ParentPicDir
+from picstore.picowner import Ownership
 
 # ROADMAP:
 # - fix dir name (try to convert current name to valid one)
