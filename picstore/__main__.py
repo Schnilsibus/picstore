@@ -1,9 +1,9 @@
 from argparse import Namespace
+from picstore.commands.create import cli_create
+from picstore.commands.list import cli_list
+from picstore.commands.view import cli_view
+from picstore.commands.repair import cli_repair
 import cli
-from commands.create import cli_create
-from commands.list import cli_list
-from commands.view import cli_view
-from commands.repair import cli_repair
 
 
 # TODO: [make separate projects for pathlib_extended]
@@ -11,9 +11,7 @@ from commands.repair import cli_repair
 # TODO: add repair command
 # TODO: maybe add check in picdir that checks if all files in RAW/STD are mine and all in OTHER are not mine (by looking at IPTC and EXIF? data and config.json)
 # TODO: add syncing capabilities maybe make that a total separate application
-# TODO: move picstore script to scripts
-# TODO: move all cmd files in sub dir?
-# TODO: move all important files in subdir?
+
 
 def main(args: Namespace):
     cmd = vars(args).pop("command")

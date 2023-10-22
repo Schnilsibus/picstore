@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     license="MIT",
     keywords=[],
-    package_dir={"": "_core"},
+    package_dir={"": "picstore"},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",

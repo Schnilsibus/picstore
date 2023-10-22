@@ -3,8 +3,8 @@ import datetime
 from typing import Tuple, List, Union, Iterator
 from shutil import copy2, move
 from tqdm import tqdm
-from pictype import pic_type, PicType
 from colorama import Fore, Style
+from pictype import pic_type, PicType
 
 date_format = "%Y-%m-%d"
 

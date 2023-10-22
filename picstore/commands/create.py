@@ -1,9 +1,9 @@
 from pathlib import Path
 import datetime
-from picdir import PicDir, ParentPicDir
 from argparse import Namespace
 from typing import Union, List
 from json_sett import Settings
+from picstore.picdir import PicDir, ParentPicDir
 
 settings = Settings(Path(__file__).parent.parent.parent / "data" / "config.json")
 sources = map(Path, settings.sources)
