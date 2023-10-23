@@ -24,9 +24,9 @@ class ParentPicDir:
 
     def get(self, name: str, date: datetime.date = None) -> PicDir | None:
         for picdir in self:
-            if date is None and picdir.name == name:
+            if date is None and picdir._name == name:
                 return picdir
-            elif date is not None and picdir.name == name and picdir.date == date:
+            elif date is not None and picdir._name == name and picdir._date == date:
                 return picdir
         return None
 

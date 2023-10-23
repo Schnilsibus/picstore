@@ -6,7 +6,7 @@ from colorama import Fore, Style
 from picstore.piccategory import Category, categories
 from picstore.picowner import Ownership, owners
 from picstore.config import config
-
+from picstore.subdirs import SubPicDir
 
 date_format = "%Y-%m-%d"
 
@@ -34,13 +34,20 @@ class PicDir:
      ):
         if (name is None and date is not None) or (name is not None and date is None):
             raise TypeError("name and date must either both have a value or both be None")
-        self._directories: Dict[str, Path] = {}
+        if name is None:
+            self._path = path_or_parent
+            self._name, self._date = PicDir._path_to_name_and_date(path=self._path)
+            self._directories = self._load_sub_directories()
+        else:
+            self._path = path_or_parent / f"{date.strftime(date_format)}_{name}"
+            self._name = name
+            self._date = date
+            self._path.mkdir()
+            self._directories = self._load_sub_directories(create=True)
+
         self._raw_files: List[Path] = []
         self._std_files: List[Path] = []
-        if name is None:
-            self._load(path=path_or_parent)
-        else:
-            self._create(parent_dir=path_or_parent, name=name, date=date)
+        self._sync_with_file_system()
 
     def __eq__(self, other) -> bool:
         """
@@ -51,9 +58,9 @@ class PicDir:
             return False
         self._sync_with_file_system()
         other._sync_with_file_system()
-        if not self.name == other.name:
+        if not self._name == other._name:
             return False
-        elif not self.date == other.date:
+        elif not self._date == other._date:
             return False
         elif not self._raw_files == other._raw_files:
             return False
@@ -64,11 +71,11 @@ class PicDir:
 
     def __str__(self):
         string = ""
-        if len(self.name) > _name_length - 3:
-            string += self.name[:-3] + "..." + _tab
+        if len(self._name) > _name_length - 3:
+            string += self._name[:-3] + "..." + _tab
         else:
-            string += self.name.ljust(20) + _tab
-        string += self.date.strftime(date_format) + _tab
+            string += self._name.ljust(20) + _tab
+        string += self._date.strftime(date_format) + _tab
         if self.num_raw_files > _pic_count_limit:
             string += ">=10^5" + _tab
         else:
@@ -83,29 +90,15 @@ class PicDir:
             string += f"{Fore.RED}{'bad'.ljust(_status_length)}"
         return f"{string}{Style.RESET_ALL}"
 
-    def _load(self, path: Path) -> None:
-        self.path = path
-        self.name, self.date = PicDir._path_to_name_and_date(path=path)
-        self._load_sub_directories()
-        self._sync_with_file_system()
-
-    def _create(self, parent_dir: Path, name: str, date: datetime.date) -> None:
-        self.path = parent_dir / f"{date.strftime(date_format)}_{name}"
-        self.name = name
-        self.date = date
-        self.path.mkdir()
-        self._load_sub_directories(create=True)
-        self._sync_with_file_system()
-
     def _sync_with_file_system(self) -> None:
         self._raw_files = list(self._directories["RAW"].iterdir())
         self._std_files = list(self._directories["STD"].iterdir())
 
-    def _load_sub_directories(self, create: bool = False) -> None:
+    def _load_sub_directories(self, create: bool = False) -> Dict[str, SubPicDir]:
         for sub_dir in PicDir._all_sub_directories:
-            self._directories[sub_dir] = self.path / sub_dir
+            self._directories[sub_dir] = self._path / sub_dir
             if not self._directories[sub_dir].is_dir() and create:
-                (self.path / sub_dir).mkdir()
+                (self._path / sub_dir).mkdir()
             elif not self._directories[sub_dir].is_dir() and not create:
                 raise IOError(f"The {sub_dir} sub directory is missing")
 
@@ -133,10 +126,22 @@ class PicDir:
     def num_std_files(self) -> int:
         return len(self._std_files)
 
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def date(self) -> datetime.date:
+        return self._date
+
     def is_intact(self) -> bool:
-        if not PicDir.has_correct_name(directory=self.path):
+        if not PicDir.has_correct_name(directory=self._path):
             return False
-        if not PicDir.contains_sub_directories(directory=self.path):
+        if not PicDir.contains_sub_directories(directory=self._path):
             return False
         if not len(self.wrong_category_files(directory="RAW")) == 0:
             return False
@@ -150,7 +155,7 @@ class PicDir:
         self._sync_with_file_system()
         all_files = tuple(self._raw_files if directory == "RAW" else self._std_files)
         if directory == "TOP":
-            all_files = tuple(self.path.iterdir())
+            all_files = tuple(self._path.iterdir())
         all_categories = categories(files=all_files)
         if directory == "RAW":
             return tuple(filter(lambda file: not all_categories[file] == Category.Raw, all_files))
@@ -159,17 +164,14 @@ class PicDir:
         elif directory == "TOP":
             return tuple(filter(lambda file: not all_categories[file] == Category.Undefined, all_files))
 
-    def wrong_ownership_files(self, directory: Literal["RAW", "STD", "OTHR"]) -> Tuple[Tuple[Path], Tuple[Path]]:
+    def wrong_ownership_files(self, directory: Literal["RAW", "STD"]) -> Tuple[Tuple[Path], Tuple[Path]]:
         self._sync_with_file_system()
         all_files = tuple(self._raw_files if directory == "RAW" else self._std_files)
         if directory == "OTHR":
             all_files = tuple(self._directories["OTHR"].iterdir())
         all_owners = owners(pictures=all_files, use_cli=False, use_metadata=True)
         undefined_files = tuple(filter(lambda file: all_owners[file] == Ownership.Undefined, all_files))
-        if directory == "RAW" or directory == "STD":
-            return tuple(filter(lambda file: all_owners[file] == Ownership.Other, all_files)), undefined_files
-        elif directory == "OTHR":
-            return tuple(filter(lambda file: all_owners[file] == Ownership.Own, all_files)), undefined_files
+        return tuple(filter(lambda file: all_owners[file] == Ownership.Other, all_files)), undefined_files
 
     @staticmethod
     def has_correct_name(directory: Path) -> bool:

@@ -15,9 +15,9 @@ def list_picdirs(directory: Path, sort: Literal["date", "name", "raw", "std"] = 
     elif sort == "std":
         picdirs.sort(key=lambda d: d.num_std_files)
     elif sort == "name":
-        picdirs.sort(key=lambda d: d.name)
+        picdirs.sort(key=lambda d: d._name)
     elif sort == "date":
-        picdirs.sort(key=lambda d: d.date)
+        picdirs.sort(key=lambda d: d._date)
     return tuple(picdirs)
 
 

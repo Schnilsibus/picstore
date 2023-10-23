@@ -30,5 +30,5 @@ def cli_create(args: Namespace) -> None:
     except BaseException as ex:
         print(ex)
         return
-    print(f"created new picdir in {str(new_picdir.path)}:")
+    print(f"created new picdir in {str(new_picdir._path)}:")
     print(str(new_picdir))

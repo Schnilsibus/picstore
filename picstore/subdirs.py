@@ -7,7 +7,7 @@ from tqdm import tqdm
 import picstore.picowner as picowner
 import picstore.piccategory as piccategory
 
-
+# TODO: iterate recursivly?O
 class SubPicDir(ABC, Sequence[Path]):
     def __init__(self, directory: Path):
         ABC.__init__(self)
@@ -29,7 +29,7 @@ class SubPicDir(ABC, Sequence[Path]):
         return self._path
 
     def contains_filename(self, filename: str) -> bool:
-        return filename in map(lambda p: p.name, self)
+        return filename in map(lambda p: p._name, self)
 
     def add(
             self,
@@ -98,20 +98,6 @@ class StdDir(SubPicDir):
 
     def get_invalid_category_pictures(self) -> Tuple[Path]:
         return tuple(filter(lambda p: not piccategory.category(file=p) == piccategory.Category.Std, self))
-
-    def get_invalid_owner_pictures(self) -> Tuple[Path]:
-        return tuple(filter(lambda p: not picowner.owner(picture=p) == picowner.Ownership.Own, self))
-
-
-class OthrDir(SubPicDir):
-    def __init__(self, directory: Path):
-        SubPicDir.__init__(self, directory=directory)
-
-    def check_picture(self, picture: Path, category: piccategory.Category, owner: picowner.Ownership) -> bool:
-        return SubPicDir.check_picture(self=self, owner=owner, category=category)
-
-    def get_invalid_category_pictures(self) -> Tuple[Path]:
-        return tuple(filter(lambda p: piccategory.category(file=p) == piccategory.Category.Undefined, self))
 
     def get_invalid_owner_pictures(self) -> Tuple[Path]:
         return tuple(filter(lambda p: not picowner.owner(picture=p) == picowner.Ownership.Own, self))
