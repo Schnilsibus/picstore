@@ -10,8 +10,14 @@ from picstore.parentpicdir import ParentPicDir
 
 def list_picdirs(directory: Path, sort: Literal["date", "name", "raw", "std"] = None) -> Tuple[PicDir]:
     picdirs = list(ParentPicDir(directory=directory))
-    if sort is not None:
-        picdirs.sort(key=lambda d: vars(d)[sort])
+    if sort == "raw":
+        picdirs.sort(key=lambda d: d.num_raw_files)
+    elif sort == "std":
+        picdirs.sort(key=lambda d: d.num_std_files)
+    elif sort == "name":
+        picdirs.sort(key=lambda d: d.name)
+    elif sort == "date":
+        picdirs.sort(key=lambda d: d.date)
     return tuple(picdirs)
 
 

@@ -162,7 +162,7 @@ class PicDir:
             use_cli: bool = True,
             copy: bool = False
     ) -> int:
-        # TODO: construct a {source. dest} dict with only files that can be moved an only then move them and display tqdm --> two for loops
+        # TODO: handle duplicates --> ask or default
         if not type(pictures) == tuple or not all([issubclass(type(picture), Path) for picture in pictures]):
             raise TypeError("parameter 'pictures' must must be a list of 'pathlib.Path's")
         count = 0
@@ -171,9 +171,8 @@ class PicDir:
         picture_owners = None
         if picture_owner is None:
             picture_owners = owners(pictures=pictures, use_cli=use_cli, use_metadata=use_metadata)
-        tqdm_desc = "copying files" if copy else "moving files"
-        iterator = tqdm(pictures, desc=tqdm_desc, unit="files") if display_tqdm else pictures
-        for picture in iterator:
+        src_dest_dict = {}
+        for picture in pictures:
             picture_owner = picture_owner if picture_owner is not None else picture_owners[picture]
             picture_type = types[picture]
             dest = picture.parent
@@ -186,9 +185,12 @@ class PicDir:
             elif picture_owner == Ownership.Own and picture_type == Category.Std:
                 dest = self._directories["STD"]
             if picture.name not in map(lambda p: p.name, dest.iterdir()):
-                copy_or_move(picture, dest)
-            count += 1
-        return count
+                src_dest_dict[picture] = dest
+        tqdm_desc = "copying files" if copy else "moving files"
+        iterator = tqdm(src_dest_dict, desc=tqdm_desc, unit="files") if display_tqdm else src_dest_dict
+        for picture in iterator:
+            copy_or_move(picture, src_dest_dict[picture])
+        return len(src_dest_dict)
 
     def is_intact(self) -> bool:
         if not PicDir.has_correct_name(directory=self.path):

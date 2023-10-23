@@ -61,6 +61,7 @@ def move_files(
         use_cli: bool = False,
         use_metadata: bool = True
 ) -> int:
+    # TODO: handle files that were not moved (e.g. because their duplicates) --> delete?
     files = picdir.wrong_category_files(directory="RAW")
     files += picdir.wrong_category_files(directory="STD")
     files += picdir.wrong_category_files(directory="TOP")
