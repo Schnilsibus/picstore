@@ -14,7 +14,7 @@ class Ownership(enum.Enum):
     Undefined = enum.auto()
 
 
-def owner(picture: Path, use_metadata: bool, use_cli: bool) -> Ownership:
+def owner(picture: Path, use_metadata: bool = True, use_cli: bool = True) -> Ownership:
     picture_owner = Ownership.Undefined
     if use_metadata:
         picture_owner = evaluate_owner(picture=picture)
@@ -23,7 +23,7 @@ def owner(picture: Path, use_metadata: bool, use_cli: bool) -> Ownership:
     return picture_owner
 
 
-def owners(pictures: Tuple[Path], use_metadata: bool, use_cli: bool) -> Dict[Path, Ownership]:
+def owners(pictures: Tuple[Path], use_metadata: bool = True, use_cli: bool = True) -> Dict[Path, Ownership]:
     picture_owners = {}
     for picture in pictures:
         picture_owners[picture] = owner(picture=picture, use_metadata=use_metadata, use_cli=use_cli)

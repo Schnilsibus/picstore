@@ -2,11 +2,11 @@ from pathlib import Path
 import datetime
 from typing import Tuple, List, Union, Literal, Optional, Dict
 import shutil
-from tqdm import tqdm
 from colorama import Fore, Style
 from picstore.piccategory import Category, categories
 from picstore.picowner import Ownership, owners
 from picstore.config import config
+
 
 date_format = "%Y-%m-%d"
 
@@ -22,6 +22,7 @@ _raw_suffixes = config.raw_types
 _std_suffixes = config.std_types
 
 
+# TODO: rewrite to use subdir class
 class PicDir:
     _all_sub_directories = ["STD", "RAW", "EXP", "LR", "OTHR"]
 
@@ -29,10 +30,7 @@ class PicDir:
             self,
             path_or_parent: Path,
             name: Optional[str] = None,
-            date: Optional[datetime.date] = None,
-            source: Optional[Union[Path, List[Path]]] = None,
-            display_tqdm: bool = True,
-            create_dirs: bool = False
+            date: Optional[datetime.date] = None
      ):
         if (name is None and date is not None) or (name is not None and date is None):
             raise TypeError("name and date must either both have a value or both be None")
@@ -40,11 +38,9 @@ class PicDir:
         self._raw_files: List[Path] = []
         self._std_files: List[Path] = []
         if name is None:
-            self._load(path=path_or_parent, create_dirs=create_dirs)
+            self._load(path=path_or_parent)
         else:
             self._create(parent_dir=path_or_parent, name=name, date=date)
-        if source:
-            self.add(source=source, display_tqdm=display_tqdm)
 
     def __eq__(self, other) -> bool:
         """
@@ -87,10 +83,10 @@ class PicDir:
             string += f"{Fore.RED}{'bad'.ljust(_status_length)}"
         return f"{string}{Style.RESET_ALL}"
 
-    def _load(self, path: Path, create_dirs: bool) -> None:
+    def _load(self, path: Path) -> None:
         self.path = path
         self.name, self.date = PicDir._path_to_name_and_date(path=path)
-        self._load_sub_directories(create=create_dirs)
+        self._load_sub_directories()
         self._sync_with_file_system()
 
     def _create(self, parent_dir: Path, name: str, date: datetime.date) -> None:
@@ -136,61 +132,6 @@ class PicDir:
     @property
     def num_std_files(self) -> int:
         return len(self._std_files)
-
-    def add(self, source: Union[Path, Tuple[Path]], display_tqdm: bool = True, recursive: bool = True) -> int:
-        if type(source) == tuple:
-            return self.add_pictures(pictures=source, display_tqdm=display_tqdm)
-        elif issubclass(type(source), Path):
-            return self.add_directory(directory=source, display_tqdm=display_tqdm, recursive=recursive)
-        else:
-            raise TypeError("parameter 'source' must ba a 'pathlib.Path' or a list of 'pathlib.Path's")
-
-    def add_directory(self, directory: Path, display_tqdm: bool = True, recursive: bool = True) -> int:
-        if not issubclass(type(directory), Path) or not directory.is_dir():
-            raise TypeError("can only add existing directories")
-        if not recursive:
-            return self.add_pictures(pictures=tuple(directory.iterdir()), display_tqdm=display_tqdm)
-        else:
-            return self.add_pictures(pictures=tuple(directory.rglob("*.*")), display_tqdm=display_tqdm)
-
-    def add_pictures(
-            self,
-            pictures: Tuple[Path],
-            display_tqdm: bool = True,
-            picture_owner: Optional[Ownership] = None,
-            use_metadata: bool = True,
-            use_cli: bool = True,
-            copy: bool = False
-    ) -> int:
-        # TODO: handle duplicates --> ask or default
-        if not type(pictures) == tuple or not all([issubclass(type(picture), Path) for picture in pictures]):
-            raise TypeError("parameter 'pictures' must must be a list of 'pathlib.Path's")
-        count = 0
-        copy_or_move = shutil.copy2 if copy else shutil.move
-        types = categories(files=pictures)
-        picture_owners = None
-        if picture_owner is None:
-            picture_owners = owners(pictures=pictures, use_cli=use_cli, use_metadata=use_metadata)
-        src_dest_dict = {}
-        for picture in pictures:
-            picture_owner = picture_owner if picture_owner is not None else picture_owners[picture]
-            picture_type = types[picture]
-            dest = picture.parent
-            if picture_type == Category.Undefined or picture_owner == Ownership.Undefined:
-                continue
-            elif picture_owner == Ownership.Other:
-                dest = self._directories["OTHR"]
-            elif picture_owner == Ownership.Own and picture_type == Category.Raw:
-                dest = self._directories["RAW"]
-            elif picture_owner == Ownership.Own and picture_type == Category.Std:
-                dest = self._directories["STD"]
-            if picture.name not in map(lambda p: p.name, dest.iterdir()):
-                src_dest_dict[picture] = dest
-        tqdm_desc = "copying files" if copy else "moving files"
-        iterator = tqdm(src_dest_dict, desc=tqdm_desc, unit="files") if display_tqdm else src_dest_dict
-        for picture in iterator:
-            copy_or_move(picture, src_dest_dict[picture])
-        return len(src_dest_dict)
 
     def is_intact(self) -> bool:
         if not PicDir.has_correct_name(directory=self.path):
