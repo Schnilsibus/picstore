@@ -1,13 +1,12 @@
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Tuple, Union, Dict
+from typing import Tuple
 import shutil
-from tqdm import tqdm
 import picstore.picowner as picowner
 import picstore.piccategory as piccategory
 
-# TODO: iterate recursivly?O
+
 class SubPicDir(ABC, Sequence[Path]):
     def __init__(self, directory: Path):
         ABC.__init__(self)
@@ -21,6 +20,11 @@ class SubPicDir(ABC, Sequence[Path]):
     def __getitem__(self, item):
         return self._files[item]
 
+    def __eq__(self, other):
+        self.update()
+        other.update()
+        return sorted(self) == sorted(other)
+
     def _load_files(self) -> Tuple[Path]:
         return tuple(filter(lambda p: p.is_file(), self.path.iterdir()))
 
@@ -29,31 +33,28 @@ class SubPicDir(ABC, Sequence[Path]):
         return self._path
 
     def contains_filename(self, filename: str) -> bool:
-        return filename in map(lambda p: p._name, self)
+        return filename in map(lambda p: p.name, self)
 
     def add(
             self,
-            pictures: Dict[Path, Tuple[piccategory.Category, picowner.Ownership]],
-            display_tqdm: bool = True,
+            picture: Path,
+            category: piccategory.Category,
+            owner: picowner.Ownership,
             copy: bool = True
-    ) -> int:
-        copy_or_move = shutil.copy2 if copy else shutil.move
-        to_copy = []
-        for picture in pictures:
-            category, owner = pictures[picture]
-            if self.contains_filename(filename=picture.name):
-                continue
-            if not self.check_picture(picture=picture, category=category, owner=owner):
-                continue
-            to_copy.append(picture)
-        tqdm_desc = "copying files" if copy else "moving files"
-        iterator = tqdm(to_copy, desc=tqdm_desc, unit="files") if display_tqdm else to_copy
-        for picture in iterator:
-            copy_or_move(picture, self.path)
-        return len(to_copy)
+    ) -> bool:
+        if not self.is_addable(picture=picture, category=category, owner=owner):
+            return False
+        shutil.copy2(picture, self.path) if copy else shutil.move(picture, self.path)
+
+    def update(self):
+        self._files = self._load_files()
 
     @abstractmethod
-    def check_picture(self, picture: Path, category: piccategory.Category, owner: picowner.Ownership) -> bool:
+    def is_addable(self, picture: Path, category: piccategory.Category, owner: picowner.Ownership) -> bool:
+        if not picture.is_file():
+            return False
+        if self.contains_filename(filename=picture.name):
+            return False
         if category == piccategory.Category.Undefined or owner == picowner.Ownership.Undefined:
             return False
         return True
@@ -71,8 +72,8 @@ class RawDir(SubPicDir):
     def __init__(self, directory: Path):
         SubPicDir.__init__(self, directory=directory)
 
-    def check_picture(self, picture: Path, category: piccategory.Category, owner: picowner.Ownership) -> bool:
-        if not SubPicDir.check_picture(self=self, owner=owner, category=category):
+    def is_addable(self, picture: Path, category: piccategory.Category, owner: picowner.Ownership) -> bool:
+        if not SubPicDir.is_addable(self=self, owner=owner, category=category):
             return False
         if not category == piccategory.Category.Raw:
             return False
@@ -82,15 +83,15 @@ class RawDir(SubPicDir):
         return tuple(filter(lambda p: not piccategory.category(file=p) == piccategory.Category.Raw, self))
 
     def get_invalid_owner_pictures(self) -> Tuple[Path]:
-        return tuple(filter(lambda p: not picowner.owner(picture=p) == picowner.Ownership.Own, self))
+        return tuple(filter(lambda p: not picowner.owner(file_or_dir=p) == picowner.Ownership.Own, self))
 
 
 class StdDir(SubPicDir):
     def __init__(self, directory: Path):
         SubPicDir.__init__(self, directory=directory)
 
-    def check_picture(self, picture: Path, category: piccategory.Category, owner: picowner.Ownership) -> bool:
-        if not SubPicDir.check_picture(self=self, owner=owner, category=category):
+    def is_addable(self, picture: Path, category: piccategory.Category, owner: picowner.Ownership) -> bool:
+        if not SubPicDir.is_addable(self=self, owner=owner, category=category):
             return False
         if not category == piccategory.Category.Std:
             return False
@@ -100,4 +101,4 @@ class StdDir(SubPicDir):
         return tuple(filter(lambda p: not piccategory.category(file=p) == piccategory.Category.Std, self))
 
     def get_invalid_owner_pictures(self) -> Tuple[Path]:
-        return tuple(filter(lambda p: not picowner.owner(picture=p) == picowner.Ownership.Own, self))
+        return tuple(filter(lambda p: not picowner.owner(file_or_dir=p) == picowner.Ownership.Own, self))

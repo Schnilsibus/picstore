@@ -15,6 +15,8 @@ class Category(enum.Enum):
 
 
 def category(file: Path) -> Category:
+    if not file.is_file():
+        return Category.Undefined
     suffix = file.suffix.upper()
     if suffix in _raw_suffixes:
         return Category.Raw

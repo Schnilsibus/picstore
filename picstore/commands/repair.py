@@ -32,13 +32,13 @@ def repair_all(parent_picdir: ParentPicDir) -> bool:
 
 def repair(directory: Path) -> bool:
     picdir = None
-    if not PicDir.has_correct_name(directory=directory):
+    if not PicDir.is_name_correct(directory=directory):
         directory = rename(directory=directory)
-        if not PicDir.has_correct_name(directory=directory):
+        if not PicDir.is_name_correct(directory=directory):
             return False
-    if not PicDir.contains_sub_directories(directory=directory):
+    if not PicDir.required_directories_exist(directory=directory):
         picdir = create_subdirectories(directory=directory)
-        if not PicDir.contains_sub_directories(directory=directory):
+        if not PicDir.required_directories_exist(directory=directory):
             return False
     if picdir is None:
         picdir = PicDir(path_or_parent=directory)
