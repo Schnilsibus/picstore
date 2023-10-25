@@ -5,9 +5,9 @@ import shutil
 from colorama import Fore, Style
 from tqdm import tqdm
 from picstore.config import config
-from picstore.subdirs import RawDir, StdDir
-import picstore.picowner as picowner
-import picstore.piccategory as piccategory
+from core.subdirs import RawDir, StdDir
+import core.picowner as picowner
+import core.piccategory as piccategory
 
 date_format = "%Y-%m-%d"
 
@@ -105,11 +105,11 @@ class PicDir:
             use_cli: bool = True,
             display_tqdm: bool = True
     ) -> int:
-        files = tuple(directory.rglob("*.*"))
-        owners = picowner.owners(files_or_dirs=files, use_cli=use_cli)
-        categories = piccategory.categories(files=files)
+        content = tuple(directory.rglob("*"))
+        owners = picowner.owners(files_or_dirs=content, use_cli=use_cli)
+        categories = piccategory.categories(files=content)
         to_copy = {}
-        for file in files:
+        for file in content:
             if self.raw.is_addable(picture=file, category=categories[file], owner=owners[file]):
                 to_copy[file] = self.raw
             elif self.std.is_addable(picture=file, category=categories[file], owner=owners[file]):

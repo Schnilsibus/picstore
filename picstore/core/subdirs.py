@@ -3,8 +3,8 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Tuple
 import shutil
-import picstore.picowner as picowner
-import picstore.piccategory as piccategory
+import core.picowner as picowner
+import core.piccategory as piccategory
 
 
 class SubPicDir(ABC, Sequence[Path]):

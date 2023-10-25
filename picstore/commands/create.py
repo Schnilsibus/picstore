@@ -2,8 +2,8 @@ from pathlib import Path
 import datetime
 from argparse import Namespace
 from typing import Union, List
-from picstore.picdir import PicDir
-from picstore.parentpicdir import ParentPicDir
+from core.picdir import PicDir
+from core.parentpicdir import ParentPicDir
 from picstore.config import config
 
 

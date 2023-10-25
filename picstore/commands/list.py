@@ -1,8 +1,8 @@
 from argparse import Namespace
 from typing import Literal, Tuple
 from pathlib import Path
-from picstore.picdir import PicDir
-from picstore.parentpicdir import ParentPicDir
+from core.picdir import PicDir
+from core.parentpicdir import ParentPicDir
 
 
 # TODO: display more wrong files: wrong category also in top-level dir; wrong owners

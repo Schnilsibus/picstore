@@ -1,10 +1,8 @@
 from datetime import datetime
-from typing import Tuple, List, Optional
+from typing import Tuple, Optional
 from pathlib import Path
-from argparse import Namespace
 from colorama import Style, Fore
-from picstore.picdir import PicDir
-from picstore.parentpicdir import ParentPicDir
+from core.parentpicdir import ParentPicDir
 from picstore.cli import date_format
 
 

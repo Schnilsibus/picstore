@@ -1,8 +1,8 @@
 from argparse import Namespace
 from pathlib import Path
-from picstore.picdir import PicDir
-from picstore.parentpicdir import ParentPicDir
-from picstore.picowner import Ownership
+from core.picdir import PicDir
+from core.parentpicdir import ParentPicDir
+from core.picowner import Ownership
 
 
 # ROADMAP:
