@@ -1,8 +1,4 @@
-from argparse import Namespace
-from picstore.commands.create import cli_create
-from picstore.commands.list import cli_list
-from picstore.commands.view import view
-from picstore.commands.repair import cli_repair
+from picstore.app import run
 import picstore.cli as cli
 
 
@@ -15,17 +11,9 @@ import picstore.cli as cli
 # TODO: add syncing capabilities maybe make that a total separate application
 
 
-def main(args: Namespace):
-    cmd = vars(args).pop("command")
-    if cmd == "create":
-        cli_create(args=args)
-    elif cmd == "list":
-        cli_list(args=args)
-    elif cmd == "view":
-        view(**vars(args))
-    elif cmd == "repair":
-        cli_repair(args=args)
+def main():
+    run(arguments=cli.parse())
 
 
 if __name__ == "__main__":
-    main(args=cli.parse())
+    main()

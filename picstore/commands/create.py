@@ -4,7 +4,7 @@ from argparse import Namespace
 from typing import Union, List
 from core.picdir import PicDir
 from core.parentpicdir import ParentPicDir
-from picstore.config import config
+from app.config import config
 
 
 _sources = map(Path, config.sources)

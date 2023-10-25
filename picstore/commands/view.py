@@ -3,7 +3,7 @@ from typing import Tuple, Optional
 from pathlib import Path
 from colorama import Style, Fore
 from core.parentpicdir import ParentPicDir
-from picstore.cli import date_format
+from app.cli import date_format
 
 
 def view(directory: Path, name: str, date: Optional[datetime.date] = None) -> None:

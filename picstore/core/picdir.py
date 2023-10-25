@@ -4,7 +4,7 @@ from typing import Tuple, Optional, Dict
 import shutil
 from colorama import Fore, Style
 from tqdm import tqdm
-from picstore.config import config
+from app.config import config
 from core.subdirs import RawDir, StdDir
 import core.picowner as picowner
 import core.piccategory as piccategory

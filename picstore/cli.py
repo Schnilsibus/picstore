@@ -2,7 +2,11 @@ from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 from typing import Callable
 from pathlib import Path
 from datetime import datetime, date
-from picstore.config import config
+from app.config import config
+
+
+# TODO: move factory methods to commands -> maybe have abstractmethod (in a abstract class if needed) for noiceness
+
 
 program_name = "picstore"
 description = "picstore is a cmd program that handles storage of pictures. " \
@@ -46,16 +50,6 @@ def create_parser_factory(parser: ArgumentParser) -> None:
     parser.add_argument("-b", "--bare",
                         help="make the new picdir empty",
                         action="store_true")
-
-
-def list_parser_factory(parser: ArgumentParser) -> None:
-    parser.add_argument("-dir",
-                        help=f"dir in which all pic dirs should be listed (default: {str(_default_dir)})",
-                        type=Path,
-                        default=_default_dir)
-    parser.add_argument("-s", "--sort",
-                        help="sort the output",
-                        choices=["date", "name", "raw", "std"])
 
 
 def view_parser_factory(parser: ArgumentParser) -> None:

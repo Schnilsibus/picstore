@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Literal
 from datetime import datetime
 from collections.abc import Sequence
 from core.picdir import PicDir, date_format
@@ -54,3 +54,8 @@ class ParentPicDir(Sequence[PicDir]):
         new_picdir = PicDir(path_or_parent=self.path, name=name, date=date)
         self._picdirs.append(new_picdir)
         return new_picdir
+
+    def sort(self, attribute: Literal["name", "date", "raw", "std"] = "date"):
+        if attribute == "raw" or attribute == "std":
+            attribute = "count_" + attribute
+        self._picdirs.sort(key=lambda p: vars(p)[attribute])
