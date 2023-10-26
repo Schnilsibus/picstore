@@ -1,6 +1,6 @@
 {
   "default_dir": "D:/Desktop/parent_dir",
-  "sources": [
+  "default_sources": [
     "D:/Desktop/test_source"
   ],
   "raw_types": [

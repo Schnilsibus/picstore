@@ -4,10 +4,10 @@ from typing import Tuple, Optional, Dict
 import shutil
 from colorama import Fore, Style
 from tqdm import tqdm
-from app.config import config
-from core.subdirs import RawDir, StdDir
-import core.picowner as picowner
-import core.piccategory as piccategory
+from picstore.config import config
+from picstore.core.subdirs import RawDir, StdDir
+import picstore.core.picowner as picowner
+import picstore.core.piccategory as piccategory
 
 date_format = "%Y-%m-%d"
 
@@ -67,6 +67,7 @@ class PicDir:
         return self.raw == other.raw and self.std == other.std
 
     def __str__(self):
+        self.update()
         string = ""
         if len(self._name) > _name_length - 3:
             string += self._name[:-3] + "..." + _tab
@@ -103,9 +104,12 @@ class PicDir:
             self,
             directory: Path,
             use_cli: bool = True,
-            display_tqdm: bool = True
+            display_tqdm: bool = True,
+            recursive: bool = True
     ) -> int:
-        content = tuple(directory.rglob("*"))
+        content = tuple(directory.iterdir())
+        if recursive:
+            content = tuple(directory.rglob("*"))
         owners = picowner.owners(files_or_dirs=content, use_cli=use_cli)
         categories = piccategory.categories(files=content)
         to_copy = {}
@@ -114,7 +118,7 @@ class PicDir:
                 to_copy[file] = self.raw
             elif self.std.is_addable(picture=file, category=categories[file], owner=owners[file]):
                 to_copy[file] = self.std
-        iterator = tqdm(to_copy) if display_tqdm else to_copy
+        iterator = tqdm(to_copy, desc=f"adding {directory.name}", unit="files") if display_tqdm else to_copy
         for file in iterator:
             to_copy[file].add(picture=file, category=categories[file], owner=owners[file])
         return len(to_copy)

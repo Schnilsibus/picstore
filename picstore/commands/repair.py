@@ -1,36 +1,59 @@
-from argparse import Namespace
+from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from core.picdir import PicDir
-from core.parentpicdir import ParentPicDir
-from core.picowner import Ownership
+from picstore.core.picdir import PicDir
+from picstore.core.parentpicdir import ParentPicDir
+from picstore.core.picowner import Ownership
+from picstore.config import config
+from picstore.commands.command import Command
+
+default_dir = Path(config.default_dir)
 
 
-# ROADMAP:
-# - fix dir name (try to convert current name to valid one)
-# - fix subdirs (all five there? if not create)
-# - move files that are neither in RAW, STD, OTHR dir and have correct suffix e.g. one that is listed in config.json
-# - move files that are wrongly in RAW or STD
-# ---
-# - make a system to repair whole parent dir
-# - make a system to input ownership of the file by one of the following:
-#   - once for whole parent_picdir (as cli arg)
-#   - once for each pic dir (via cli input while running)
-#   - for each file (via cli input while running)
-#   - by the files metadata (IPTC) e.g. camera model --> define my camera modells in config.json
-#       --> use this library:  https://pypi.org/project/IPTCInfo3/
-# - success
+class Repair(Command):
+    name = "repair"
+
+    def __init__(self):
+        Command.__init__(self)
+
+    @staticmethod
+    def construct_parser(raw_parser: ArgumentParser) -> None:
+        raw_parser.add_argument("-dir",
+                                help=f"path to the (parent) picdir that needs repairing (default: {default_dir}).",
+                                type=Path,
+                                default=default_dir,
+                                dest="directory")
+        raw_parser.add_argument("--single",
+                                help="indicate that 'dir' argument points to a picdir",
+                                action="store_true",
+                                default=False)
+
+    @staticmethod
+    def run(arguments: Namespace) -> None:
+        Repair.repair(**vars(arguments))
+
+    @staticmethod
+    def repair(
+            directory: Path,
+            single: bool
+    ) -> None:
+        print("repair")
+        if not single:
+            parent_picdir = ParentPicDir(directory=directory)
+            repair_all(parent_picdir=parent_picdir)
+        else:
+            repair_single(directory=directory)
 
 
 def repair_all(parent_picdir: ParentPicDir) -> bool:
     repaired_all = True
     for directory in parent_picdir.path.iterdir():
-        repaired = repair(directory=directory)
+        repaired = repair_single(directory=directory)
         if repaired_all:
             repaired_all = repaired
     return repaired_all
 
 
-def repair(directory: Path) -> bool:
+def repair_single(directory: Path) -> bool:
     picdir = None
     if not PicDir.is_name_correct(directory=directory):
         directory = rename(directory=directory)
@@ -76,6 +99,6 @@ def move_files(
 def cli_repair(args: Namespace) -> None:
     print(args)
     if args.picdir:
-        repair(directory=args.dir)
+        repair_single(directory=args.dir)
     else:
         repair_all(parent_picdir=ParentPicDir(directory=args.dir))

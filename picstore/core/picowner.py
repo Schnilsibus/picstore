@@ -2,7 +2,7 @@ import enum
 from pathlib import Path
 from exiftool import ExifToolHelper
 from typing import Tuple, Dict
-from app.config import config
+from picstore.config import config
 
 
 _my_camera_models = config.my_camera_models

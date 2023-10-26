@@ -3,9 +3,11 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Tuple
 import shutil
-import core.picowner as picowner
-import core.piccategory as piccategory
+import picstore.core.picowner as picowner
+import picstore.core.piccategory as piccategory
 
+
+# shrink down to only one class? --> pass wether its raw or std dir in constructor
 
 class SubPicDir(ABC, Sequence[Path]):
     def __init__(self, directory: Path):
@@ -73,7 +75,7 @@ class RawDir(SubPicDir):
         SubPicDir.__init__(self, directory=directory)
 
     def is_addable(self, picture: Path, category: piccategory.Category, owner: picowner.Ownership) -> bool:
-        if not SubPicDir.is_addable(self=self, owner=owner, category=category):
+        if not SubPicDir.is_addable(self=self, picture=picture, owner=owner, category=category):
             return False
         if not category == piccategory.Category.Raw:
             return False
@@ -91,7 +93,7 @@ class StdDir(SubPicDir):
         SubPicDir.__init__(self, directory=directory)
 
     def is_addable(self, picture: Path, category: piccategory.Category, owner: picowner.Ownership) -> bool:
-        if not SubPicDir.is_addable(self=self, owner=owner, category=category):
+        if not SubPicDir.is_addable(self=self, picture=picture, owner=owner, category=category):
             return False
         if not category == piccategory.Category.Std:
             return False

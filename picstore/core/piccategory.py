@@ -1,7 +1,7 @@
 import enum
 from pathlib import Path
 from typing import Tuple, Dict
-from app.config import config
+from picstore.config import config
 
 
 _raw_suffixes = config.raw_types
