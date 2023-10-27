@@ -3,12 +3,15 @@ from picstore.commands.list import List
 from picstore.commands.view import View
 from picstore.commands.create import Create
 from picstore.commands.repair import Repair
+from picstore.commands.add import Add
+
 
 all_commands = [
     List(),
     View(),
     Create(),
-    Repair()
+    Repair(),
+    Add()
 ]
 
 

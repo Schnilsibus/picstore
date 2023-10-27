@@ -2,11 +2,7 @@ from picstore.app import run
 from picstore.cli import parse
 
 
-# TODO: add doc strings
-# TODO: add add command
-# TODO: add lightroom support
-# TODO: change concept of commands only one main method --> construct parser so that you can call it as method(**args)
-# TODO: think about giving each sub dir a py representation class --> better code structure
+# TODO: try to add lightroom support
 # TODO: add syncing capabilities maybe make that a total separate application
 
 

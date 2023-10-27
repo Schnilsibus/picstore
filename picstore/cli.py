@@ -4,15 +4,13 @@ from picstore.commands.list import List
 from picstore.commands.view import View
 from picstore.commands.create import Create
 from picstore.commands.repair import Repair
-
-
-# TODO: move factory methods to commands -> maybe have abstractmethod (in a abstract class if needed) for noiceness
+from picstore.commands.add import Add
 
 
 program_name = "picstore"
 description = "picstore is a cmd program that handles storage of pictures. " \
               "It's core functionality is to organize pictures in different directories."
-epilog = "'picstore <command> -h' for detailed information for a command."
+epilog = "'picstore <command> -h' for detailed information on a command."
 
 
 class PicParser(ArgumentParser):
@@ -45,6 +43,9 @@ def construct_parser() -> PicParser:
                                  formatter_class=ArgumentDefaultsHelpFormatter)
     subparsers_action.add_parser(name="repair",
                                  parser_factory=Repair.construct_parser,
+                                 formatter_class=ArgumentDefaultsHelpFormatter)
+    subparsers_action.add_parser(name="add",
+                                 parser_factory=Add.construct_parser,
                                  formatter_class=ArgumentDefaultsHelpFormatter)
     return parser
 

@@ -42,6 +42,10 @@ class Create(Command):
                                 help="search source directory recursively",
                                 action="store_true",
                                 default=False)
+        raw_parser.add_argument("-c", "--copy",
+                                help="specify to copy files (otherwise will move files)",
+                                action="store_true",
+                                default=False)
 
     @staticmethod
     def run(arguments: Namespace) -> None:
@@ -54,15 +58,16 @@ class Create(Command):
             date: datetime.date,
             source: Optional[Path],
             bare: bool,
-            recursive: bool
+            recursive: bool,
+            copy: bool
     ) -> None:
         picdir = ParentPicDir(directory=directory).add(name=name, date=date)
 
         if source is not None:
-            picdir.add(directory=source, recursive=recursive)
-        elif bare is not None:
+            picdir.add(directory=source, recursive=recursive, copy=copy)
+        elif not bare:
             for source in sources:
                 if source.is_dir():
-                    picdir.add(directory=source, recursive=recursive)
-        print(f"created new picdir in {str(picdir.path)}:")
-        print(str(picdir))
+                    picdir.add(directory=source, recursive=recursive, copy=copy)
+        print(f"created new picdir in {picdir.path}:")
+        print(picdir)
