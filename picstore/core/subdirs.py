@@ -7,7 +7,7 @@ import picstore.core.picowner as picowner
 import picstore.core.piccategory as piccategory
 
 
-
+# TODO: make one class that determines which type of subdir it is by the directory param in __init__
 
 
 class SubPicDir(ABC, Sequence[Path]):
@@ -86,7 +86,8 @@ class RawDir(SubPicDir):
         return tuple(filter(lambda p: not piccategory.category(file=p) == piccategory.Category.Raw, self))
 
     def get_invalid_owner_pictures(self) -> Tuple[Path]:
-        return tuple(filter(lambda p: not picowner.owner(file_or_dir=p, use_shell=False) == picowner.Ownership.Own, self))
+        return tuple(filter(lambda p: not picowner.owner(file_or_dir=p, use_shell=False) == picowner.Ownership.Own,
+                            self))
 
 
 class StdDir(SubPicDir):
@@ -104,7 +105,8 @@ class StdDir(SubPicDir):
         return tuple(filter(lambda p: not piccategory.category(file=p) == piccategory.Category.Std, self))
 
     def get_invalid_owner_pictures(self) -> Tuple[Path]:
-        return tuple(filter(lambda p: not picowner.owner(file_or_dir=p, use_shell=False) == picowner.Ownership.Own, self))
+        return tuple(filter(lambda p: not picowner.owner(file_or_dir=p, use_shell=False) == picowner.Ownership.Own,
+                            self))
 
 
 class OtherDir(SubPicDir):
@@ -118,5 +120,5 @@ class OtherDir(SubPicDir):
         return tuple(filter(lambda p: piccategory.category(file=p) == piccategory.Category.Undefined, self))
 
     def get_invalid_owner_pictures(self) -> Tuple[Path]:
-        return tuple(filter(lambda p: not picowner.owner(file_or_dir=p, use_shell=False) == picowner.Ownership.Other, self))
-
+        return tuple(filter(lambda p: not picowner.owner(file_or_dir=p, use_shell=False) == picowner.Ownership.Other,
+                            self))

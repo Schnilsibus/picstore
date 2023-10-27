@@ -1,9 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Optional
 from picstore.core.picdir import PicDir
 from picstore.core.parentpicdir import ParentPicDir
-from picstore.core.picowner import Ownership
 from picstore.config import config
 from picstore.commands.command import Command
 
@@ -78,6 +76,3 @@ def move_files(
                       use_shell=use_shell,
                       recursive=True,
                       copy=False)
-
-
-
