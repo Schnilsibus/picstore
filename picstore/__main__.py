@@ -3,7 +3,6 @@ from picstore.cli import parse
 
 
 # TODO: add doc strings
-# TODO: fix repair command
 # TODO: add add command
 # TODO: add lightroom support
 # TODO: change concept of commands only one main method --> construct parser so that you can call it as method(**args)

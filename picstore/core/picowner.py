@@ -14,19 +14,19 @@ class Ownership(enum.Enum):
     Undefined = enum.auto()
 
 
-def owner(file_or_dir: Path, use_metadata: bool = True, use_cli: bool = True) -> Ownership:
+def owner(file_or_dir: Path, use_metadata: bool = True, use_shell: bool = True) -> Ownership:
     picture_owner = Ownership.Undefined
     if use_metadata:
         picture_owner = evaluate_owner(file=file_or_dir)
-    if picture_owner == Ownership.Undefined and use_cli:
+    if picture_owner == Ownership.Undefined and use_shell:
         picture_owner = ask_owner(file_or_dir=file_or_dir)
     return picture_owner
 
 
-def owners(files_or_dirs: Tuple[Path], use_metadata: bool = True, use_cli: bool = True) -> Dict[Path, Ownership]:
+def owners(files_or_dirs: Tuple[Path], use_metadata: bool = True, use_shell: bool = True) -> Dict[Path, Ownership]:
     picture_owners = {}
     for picture in files_or_dirs:
-        picture_owners[picture] = owner(file_or_dir=picture, use_metadata=use_metadata, use_cli=use_cli)
+        picture_owners[picture] = owner(file_or_dir=picture, use_metadata=use_metadata, use_shell=use_shell)
     return picture_owners
 
 

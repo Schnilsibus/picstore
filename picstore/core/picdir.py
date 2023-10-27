@@ -5,7 +5,7 @@ import shutil
 from colorama import Fore, Style
 from tqdm import tqdm
 from picstore.config import config
-from picstore.core.subdirs import RawDir, StdDir
+from picstore.core.subdirs import RawDir, StdDir, OtherDir
 import picstore.core.picowner as picowner
 import picstore.core.piccategory as piccategory
 
@@ -44,27 +44,13 @@ class PicDir:
             self._date = date
             self._path.mkdir()
             self._directories = self._load_sub_directories(create=True)
-        self._raw_dir = RawDir(directory=self._directories["RAW"])
-        self._std_dir = StdDir(directory=self._directories["STD"])
+        self._raw_dir = RawDir(directory=self["RAW"])
+        self._std_dir = StdDir(directory=self["STD"])
+        self._other_dir = OtherDir(directory=self["OTHR"])
         self.update()
 
     def __getitem__(self, item):
         return self._directories[item]
-
-    def __eq__(self, other) -> bool:
-        """
-
-        :type other: PicDir
-        """
-        if not type(other) == PicDir:
-            return False
-        self.update()
-        other.update()
-        if not self._name == other._name:
-            return False
-        elif not self._date == other._date:
-            return False
-        return self.raw == other.raw and self.std == other.std
 
     def __str__(self):
         self.update()
@@ -96,6 +82,10 @@ class PicDir:
     def std(self) -> StdDir:
         return self._std_dir
 
+    @property
+    def other(self) -> OtherDir:
+        return self._other_dir
+
     def update(self) -> None:
         self.raw.update()
         self.std.update()
@@ -103,25 +93,29 @@ class PicDir:
     def add(
             self,
             directory: Path,
-            use_cli: bool = True,
+            use_shell: bool = True,
             display_tqdm: bool = True,
-            recursive: bool = True
+            recursive: bool = True,
+            copy: bool = False
     ) -> int:
         content = tuple(directory.iterdir())
         if recursive:
             content = tuple(directory.rglob("*"))
-        owners = picowner.owners(files_or_dirs=content, use_cli=use_cli)
         categories = piccategory.categories(files=content)
-        to_copy = {}
+        content = tuple(filter(lambda p: not categories[p] == piccategory.Category.Undefined, content))
+        owners = picowner.owners(files_or_dirs=content, use_shell=use_shell)
+        to_add = {}
         for file in content:
             if self.raw.is_addable(picture=file, category=categories[file], owner=owners[file]):
-                to_copy[file] = self.raw
+                to_add[file] = self.raw
             elif self.std.is_addable(picture=file, category=categories[file], owner=owners[file]):
-                to_copy[file] = self.std
-        iterator = tqdm(to_copy, desc=f"adding {directory.name}", unit="files") if display_tqdm else to_copy
+                to_add[file] = self.std
+        if len(to_add) == 0:
+            return 0
+        iterator = tqdm(to_add, desc=f"adding {directory.name}", unit="files") if display_tqdm else to_add
         for file in iterator:
-            to_copy[file].add(picture=file, category=categories[file], owner=owners[file])
-        return len(to_copy)
+            to_add[file].add(picture=file, category=categories[file], owner=owners[file], copy=copy)
+        return len(to_add)
 
     def _load_sub_directories(self, create: bool = False) -> Dict[str, Path]:
         directories = {}
@@ -201,6 +195,13 @@ class PicDir:
             raise ValueError(f"{str(directory)} is no directory")
         sub_directories = map(lambda d: d.parts[-1], directory.iterdir())
         return set(PicDir.required_directories) <= set(sub_directories)
+
+    @staticmethod
+    def create_required_directories(directory: Path):
+        for directory_name in PicDir.required_directories:
+            subdir = directory / directory_name
+            if not subdir.is_dir():
+                subdir.mkdir()
 
     @staticmethod
     def rename_directory(directory: Path) -> Path:

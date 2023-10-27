@@ -7,7 +7,8 @@ import picstore.core.picowner as picowner
 import picstore.core.piccategory as piccategory
 
 
-# shrink down to only one class? --> pass wether its raw or std dir in constructor
+
+
 
 class SubPicDir(ABC, Sequence[Path]):
     def __init__(self, directory: Path):
@@ -85,7 +86,7 @@ class RawDir(SubPicDir):
         return tuple(filter(lambda p: not piccategory.category(file=p) == piccategory.Category.Raw, self))
 
     def get_invalid_owner_pictures(self) -> Tuple[Path]:
-        return tuple(filter(lambda p: not picowner.owner(file_or_dir=p) == picowner.Ownership.Own, self))
+        return tuple(filter(lambda p: not picowner.owner(file_or_dir=p, use_shell=False) == picowner.Ownership.Own, self))
 
 
 class StdDir(SubPicDir):
@@ -103,4 +104,19 @@ class StdDir(SubPicDir):
         return tuple(filter(lambda p: not piccategory.category(file=p) == piccategory.Category.Std, self))
 
     def get_invalid_owner_pictures(self) -> Tuple[Path]:
-        return tuple(filter(lambda p: not picowner.owner(file_or_dir=p) == picowner.Ownership.Own, self))
+        return tuple(filter(lambda p: not picowner.owner(file_or_dir=p, use_shell=False) == picowner.Ownership.Own, self))
+
+
+class OtherDir(SubPicDir):
+    def __init__(self, directory: Path):
+        SubPicDir.__init__(self, directory=directory)
+
+    def is_addable(self, picture: Path, category: piccategory.Category, owner: picowner.Ownership) -> bool:
+        return SubPicDir.is_addable(self=self, picture=picture, category=category, owner=owner)
+
+    def get_invalid_category_pictures(self) -> Tuple[Path]:
+        return tuple(filter(lambda p: piccategory.category(file=p) == piccategory.Category.Undefined, self))
+
+    def get_invalid_owner_pictures(self) -> Tuple[Path]:
+        return tuple(filter(lambda p: not picowner.owner(file_or_dir=p, use_shell=False) == picowner.Ownership.Other, self))
+
