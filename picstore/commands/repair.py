@@ -54,51 +54,24 @@ def repair_all(parent_picdir: ParentPicDir) -> bool:
 
 
 def repair_single(directory: Path) -> bool:
-    picdir = None
     if not PicDir.is_name_correct(directory=directory):
-        directory = rename(directory=directory)
+        directory = PicDir.rename_directory(directory=directory)
         if not PicDir.is_name_correct(directory=directory):
             return False
     if not PicDir.required_directories_exist(directory=directory):
-        picdir = create_subdirectories(directory=directory)
+        PicDir.create_missing_directories(directory=directory)
         if not PicDir.required_directories_exist(directory=directory):
             return False
-    if picdir is None:
-        picdir = PicDir(path_or_parent=directory)
+    picdir = PicDir(path_or_parent=directory)
     move_files(picdir=picdir, owner=Ownership.Own)
     return picdir.is_intact()
-
-
-def rename(directory: Path) -> Path:
-    return PicDir.rename_directory(directory=directory)
-
-
-def create_subdirectories(directory: Path) -> PicDir:
-    return PicDir(path_or_parent=directory, create_dirs=True)
 
 
 def move_files(
         picdir: PicDir,
         owner: Ownership = None,
         display_tqdm: bool = True,
-        use_cli: bool = False,
-        use_metadata: bool = True
+        use_cli: bool = False
 ) -> int:
     # TODO: handle files that were not moved (e.g. because their duplicates) --> delete?
-    files = picdir.wrong_category_files(directory="RAW")
-    files += picdir.wrong_category_files(directory="STD")
-    files += picdir.wrong_category_files(directory="TOP")
-    return picdir.add_pictures(pictures=tuple(files),
-                               display_tqdm=display_tqdm,
-                               picture_owner=owner,
-                               use_cli=use_cli,
-                               use_metadata=use_metadata,
-                               copy=False)
 
-
-def cli_repair(args: Namespace) -> None:
-    print(args)
-    if args.picdir:
-        repair_single(directory=args.dir)
-    else:
-        repair_all(parent_picdir=ParentPicDir(directory=args.dir))

@@ -52,17 +52,13 @@ class PicDir:
         return self._directories[item]
 
     def __eq__(self, other) -> bool:
-        """
-
-        :type other: PicDir
-        """
         if not type(other) == PicDir:
             return False
         self.update()
         other.update()
-        if not self._name == other._name:
+        if not self.name == other.name:
             return False
-        elif not self._date == other._date:
+        elif not self.date == other.date:
             return False
         return self.raw == other.raw and self.std == other.std
 
@@ -201,6 +197,13 @@ class PicDir:
             raise ValueError(f"{str(directory)} is no directory")
         sub_directories = map(lambda d: d.parts[-1], directory.iterdir())
         return set(PicDir.required_directories) <= set(sub_directories)
+
+    @staticmethod
+    def create_missing_directories(directory: Path) -> None:
+        for directory_name in PicDir.required_directories:
+            sub_directory = directory / directory_name
+            if not sub_directory.is_dir():
+                sub_directory.mkdir()
 
     @staticmethod
     def rename_directory(directory: Path) -> Path:
