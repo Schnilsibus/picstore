@@ -1,13 +1,12 @@
 from pathlib import Path
 import datetime
-from typing import Tuple, Optional, Dict, Generator
+from typing import Tuple, Optional, Dict
 import shutil
 from colorama import Fore, Style
 from tqdm import tqdm
 from picstore.config import config
-from picstore.core.subdirs import RawDir, StdDir, OtherDir
-import picstore.core.pictype as pictype
-from collections.abc import Sequence
+from picstore.core.subdir import SubDir
+from picstore.core import pictype
 
 date_format = "%Y-%m-%d"
 
@@ -44,9 +43,9 @@ class PicDir:
             self._date = date
             self._path.mkdir()
             self._directories = self._load_sub_directories(create=True)
-        self._raw_dir = RawDir(directory=self["RAW"])
-        self._std_dir = StdDir(directory=self["STD"])
-        self._other_dir = OtherDir(directory=self["OTHR"])
+        self._raw_dir = SubDir(directory=self["RAW"])
+        self._std_dir = SubDir(directory=self["STD"])
+        self._other_dir = SubDir(directory=self["OTHR"])
         self.update()
 
     def __getitem__(self, item):
@@ -75,25 +74,25 @@ class PicDir:
         return f"{string}{Style.RESET_ALL}"
 
     @property
-    def raw(self) -> RawDir:
+    def raw(self) -> SubDir:
         return self._raw_dir
 
     @property
-    def std(self) -> StdDir:
+    def std(self) -> SubDir:
         return self._std_dir
 
     @property
-    def other(self) -> OtherDir:
+    def other(self) -> SubDir:
         return self._other_dir
 
     def update(self) -> None:
         self.raw.update()
         self.std.update()
+        self.other.update()
 
     def add(
             self,
             directory: Path,
-            use_shell: bool = True,
             display_tqdm: bool = True,
             recursive: bool = True,
             copy: bool = False
@@ -103,18 +102,17 @@ class PicDir:
             content = tuple(directory.rglob("*"))
         categories = pictype.categories(files=content)
         content = tuple(filter(lambda p: not categories[p] == pictype.Category.Undefined, content))
-        owners = pictype.owners(files_or_dirs=content, use_shell=use_shell)
         to_add = {}
         for file in content:
-            if self.raw.is_addable(picture=file, category=categories[file], owner=owners[file]):
+            if self.raw.is_addable(picture=file, category=categories[file]):
                 to_add[file] = self.raw
-            elif self.std.is_addable(picture=file, category=categories[file], owner=owners[file]):
+            elif self.std.is_addable(picture=file, category=categories[file]):
                 to_add[file] = self.std
         if len(to_add) == 0:
             return 0
         iterator = tqdm(to_add, desc=f"adding {directory.name}", unit="files") if display_tqdm else to_add
         for file in iterator:
-            to_add[file].add(picture=file, category=categories[file], owner=owners[file], copy=copy)
+            to_add[file].add(picture=file, copy=copy)
         return len(to_add)
 
     def _load_sub_directories(self, create: bool = False) -> Dict[str, Path]:
@@ -168,9 +166,7 @@ class PicDir:
             return False
         if not PicDir.required_directories_exist(directory=self._path):
             return False
-        if not len(self.raw.get_invalid_category_pictures()) == 0:
-            return False
-        if not len(self.std.get_invalid_category_pictures()) == 0:
+        if not self.raw.is_intact() or not self.std.is_intact():
             return False
         return True
 
@@ -223,61 +219,3 @@ class PicDir:
         new_name = f"{date.strftime(date_format)}_{''.join(parts[3:])}"
         shutil.move(src=directory, dst=directory.parent / new_name)
         return Path(new_name)
-
-
-class SubDir(Sequence[Path]):
-    def __init__(self, directory: Path):
-        Sequence.__init__(self)
-        if not directory.is_dir():
-            raise ValueError(f"{directory} is not a directory")
-        self._path = directory
-        self._name = directory.name
-        self._content = self._load_content()
-        if directory.name == "RAW":
-            self._categories = (pictype.Category.Raw, )
-            self._owner = pictype.Ownership.Own
-        elif directory.name == "STD":
-            self._categories = (pictype.Category.Std, )
-            self._owner = pictype.Ownership.Own
-        elif directory.name == "OTHR":
-            self._categories = (pictype.Category.Raw, pictype.Category.Raw)
-            self._owner = pictype.Ownership.Other
-
-    def __len__(self):
-        return len(self._content)
-
-    def __getitem__(self, item):
-        return self._content[item]
-
-    @property
-    def path(self) -> Path:
-        return self._path
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @property
-    def content(self) -> Tuple[Path]:
-        return self._content
-
-    def iterdir(self) -> Generator[Path, None, None]:
-        return self.path.iterdir()
-
-    def _load_content(self) -> Tuple[Path]:
-        raise NotImplementedError()
-
-    def is_ignored(self, path: Path, category: pictype.Category, owner: pictype.Ownership) -> bool:
-        raise NotImplementedError()
-
-    def contains_name(self, name: str) -> bool:
-        raise NotImplementedError()
-
-    def add(
-            self,
-            picture: Path,
-            category: pictype.Category,
-            owner: pictype.Ownership,
-            copy: bool = True
-    ) -> bool:
-        raise NotImplementedError()

@@ -53,8 +53,8 @@ class View(Command):
         else:
             print(f"{'Status:'.ljust(10)}{Fore.RED}bad{Style.RESET_ALL}")
         print()
-        print_files(title=f"Invalid in {picdir.raw.path}", files=picdir.raw.get_invalid_category_pictures())
-        print_files(title=f"Invalid in {picdir.std.path}", files=picdir.std.get_invalid_category_pictures())
+        print_files(title=f"Invalid in {picdir.raw.path}", files=picdir.raw.get_invalid_category_content())
+        print_files(title=f"Invalid in {picdir.std.path}", files=picdir.std.get_invalid_owner_content())
 
 
 def print_files(title: str, files: Tuple[Path]) -> None:

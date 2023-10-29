@@ -68,11 +68,9 @@ def repair_single(directory: Path) -> bool:
 
 def move_files(
         picdir: PicDir,
-        display_tqdm: bool = True,
-        use_shell: bool = True
+        display_tqdm: bool = True
 ) -> int:
     return picdir.add(directory=picdir.path,
                       display_tqdm=display_tqdm,
-                      use_shell=use_shell,
                       recursive=True,
                       copy=False)
