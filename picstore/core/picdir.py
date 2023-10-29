@@ -1,13 +1,13 @@
 from pathlib import Path
 import datetime
-from typing import Tuple, Optional, Dict
+from typing import Tuple, Optional, Dict, Generator
 import shutil
 from colorama import Fore, Style
 from tqdm import tqdm
 from picstore.config import config
 from picstore.core.subdirs import RawDir, StdDir, OtherDir
-import picstore.core.picowner as picowner
-import picstore.core.piccategory as piccategory
+import picstore.core.pictype as pictype
+from collections.abc import Sequence
 
 date_format = "%Y-%m-%d"
 
@@ -101,9 +101,9 @@ class PicDir:
         content = tuple(directory.iterdir())
         if recursive:
             content = tuple(directory.rglob("*"))
-        categories = piccategory.categories(files=content)
-        content = tuple(filter(lambda p: not categories[p] == piccategory.Category.Undefined, content))
-        owners = picowner.owners(files_or_dirs=content, use_shell=use_shell)
+        categories = pictype.categories(files=content)
+        content = tuple(filter(lambda p: not categories[p] == pictype.Category.Undefined, content))
+        owners = pictype.owners(files_or_dirs=content, use_shell=use_shell)
         to_add = {}
         for file in content:
             if self.raw.is_addable(picture=file, category=categories[file], owner=owners[file]):
@@ -223,3 +223,61 @@ class PicDir:
         new_name = f"{date.strftime(date_format)}_{''.join(parts[3:])}"
         shutil.move(src=directory, dst=directory.parent / new_name)
         return Path(new_name)
+
+
+class SubDir(Sequence[Path]):
+    def __init__(self, directory: Path):
+        Sequence.__init__(self)
+        if not directory.is_dir():
+            raise ValueError(f"{directory} is not a directory")
+        self._path = directory
+        self._name = directory.name
+        self._content = self._load_content()
+        if directory.name == "RAW":
+            self._categories = (pictype.Category.Raw, )
+            self._owner = pictype.Ownership.Own
+        elif directory.name == "STD":
+            self._categories = (pictype.Category.Std, )
+            self._owner = pictype.Ownership.Own
+        elif directory.name == "OTHR":
+            self._categories = (pictype.Category.Raw, pictype.Category.Raw)
+            self._owner = pictype.Ownership.Other
+
+    def __len__(self):
+        return len(self._content)
+
+    def __getitem__(self, item):
+        return self._content[item]
+
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def content(self) -> Tuple[Path]:
+        return self._content
+
+    def iterdir(self) -> Generator[Path, None, None]:
+        return self.path.iterdir()
+
+    def _load_content(self) -> Tuple[Path]:
+        raise NotImplementedError()
+
+    def is_ignored(self, path: Path, category: pictype.Category, owner: pictype.Ownership) -> bool:
+        raise NotImplementedError()
+
+    def contains_name(self, name: str) -> bool:
+        raise NotImplementedError()
+
+    def add(
+            self,
+            picture: Path,
+            category: pictype.Category,
+            owner: pictype.Ownership,
+            copy: bool = True
+    ) -> bool:
+        raise NotImplementedError()

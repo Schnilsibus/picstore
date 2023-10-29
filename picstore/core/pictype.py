@@ -1,17 +1,44 @@
+from exiftool import ExifToolHelper
 import enum
 from pathlib import Path
-from exiftool import ExifToolHelper
 from typing import Tuple, Dict
 from picstore.config import config
 
 
+_raw_suffixes = config.raw_types
+_std_suffixes = config.std_types
 _my_camera_models = config.my_camera_models
+
+
+class Category(enum.Enum):
+    Std = enum.auto()
+    Raw = enum.auto()
+    Undefined = enum.auto()
 
 
 class Ownership(enum.Enum):
     Own = enum.auto()
     Other = enum.auto()
     Undefined = enum.auto()
+
+
+def category(file: Path) -> Category:
+    if not file.is_file():
+        return Category.Undefined
+    suffix = file.suffix.upper()
+    if suffix in _raw_suffixes:
+        return Category.Raw
+    elif suffix in _std_suffixes:
+        return Category.Std
+    else:
+        return Category.Undefined
+
+
+def categories(files: Tuple[Path]) -> Dict[Path, Category]:
+    types = {}
+    for file in files:
+        types[file] = category(file=file)
+    return types
 
 
 def owner(file_or_dir: Path, use_metadata: bool = True, use_shell: bool = True) -> Ownership:
@@ -65,3 +92,20 @@ def ask_owners(files_or_dirs: Tuple[Path]) -> Dict[Path, Ownership]:
     for picture in files_or_dirs:
         picture_owners[picture] = ask_owner(file_or_dir=picture)
     return picture_owners
+
+
+def get_type(path: Path, use_metadata: bool = True, use_shell: bool = True) -> Tuple[Category, Ownership]:
+    pic_category = category(file=path)
+    pic_owner = owner(file_or_dir=path, use_metadata=use_metadata, use_shell=use_shell)
+    return pic_category, pic_owner
+
+
+def get_types(
+        paths: Tuple[Path],
+        use_metadata: bool = True,
+        use_shell: bool = True
+) -> Dict[Path, Tuple[Category, Ownership]]:
+    types = {}
+    for path in paths:
+        types[path] = get_type(path=path, use_metadata=use_metadata, use_shell=use_shell)
+    return types
