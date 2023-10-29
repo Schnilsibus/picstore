@@ -2,7 +2,7 @@ from pathlib import Path
 import datetime
 from argparse import ArgumentParser, Namespace
 from typing import Optional
-from picstore.core.parentpicdir import ParentPicDir
+from picstore.core.parentdir import ParentDir
 from picstore.config import config
 from picstore.commands.command import Command
 from picstore.core.picdir import date_format
@@ -61,7 +61,7 @@ class Create(Command):
             recursive: bool,
             copy: bool
     ) -> None:
-        picdir = ParentPicDir(directory=directory).add(name=name, date=date)
+        picdir = ParentDir(directory=directory).add(name=name, date=date)
 
         if source is not None:
             picdir.add(directory=source, recursive=recursive, copy=copy)

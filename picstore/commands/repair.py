@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from picstore.core.picdir import PicDir
-from picstore.core.parentpicdir import ParentPicDir
+from picstore.core.parentdir import ParentDir
 from picstore.config import config
 from picstore.commands.command import Command
 
@@ -37,13 +37,13 @@ class Repair(Command):
     ) -> None:
         print("repair")
         if not single:
-            parent_picdir = ParentPicDir(directory=directory)
+            parent_picdir = ParentDir(directory=directory)
             repair_all(parent_picdir=parent_picdir)
         else:
             repair_single(directory=directory)
 
 
-def repair_all(parent_picdir: ParentPicDir) -> bool:
+def repair_all(parent_picdir: ParentDir) -> bool:
     repaired_all = True
     for directory in parent_picdir.path.iterdir():
         repaired = repair_single(directory=directory)

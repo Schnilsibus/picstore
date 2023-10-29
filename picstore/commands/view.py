@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Tuple, Optional
 from pathlib import Path
 from colorama import Style, Fore
-from picstore.core.parentpicdir import ParentPicDir
+from picstore.core.parentdir import ParentDir
 from picstore.core.picdir import date_format
 from picstore.config import config
 from picstore.commands.command import Command
@@ -36,7 +36,7 @@ class View(Command):
 
     @staticmethod
     def view(directory: Path, name: str, date: Optional[datetime.date] = None) -> None:
-        parent_picdir = ParentPicDir(directory=directory)
+        parent_picdir = ParentDir(directory=directory)
         picdir = parent_picdir.get(name=name, date=date)
         if picdir is None:
             date_str = "" if date is None else f"with date {date.strftime(date_format)}"

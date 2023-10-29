@@ -1,7 +1,6 @@
 from pathlib import Path
 import datetime
 from typing import Tuple, Optional, Dict
-import shutil
 from colorama import Fore, Style
 from tqdm import tqdm
 from picstore.config import config
@@ -217,5 +216,4 @@ class PicDir:
             return directory
         date = datetime.date(year=year, month=month, day=day)
         new_name = f"{date.strftime(date_format)}_{''.join(parts[3:])}"
-        shutil.move(src=directory, dst=directory.parent / new_name)
-        return Path(new_name)
+        return directory.rename(new_name)

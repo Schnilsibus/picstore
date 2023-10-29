@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Literal, Optional
 from pathlib import Path
 from picstore.core.picdir import PicDir
-from picstore.core.parentpicdir import ParentPicDir
+from picstore.core.parentdir import ParentDir
 from picstore.config import config
 from picstore.commands.command import Command
 
@@ -41,7 +41,7 @@ class List(Command):
             sort: Optional[Literal["date", "name", "raw", "std"]] = None,
             reverse: bool = False
     ) -> None:
-        picdirs = ParentPicDir(directory=directory)
+        picdirs = ParentDir(directory=directory)
         if sort is not None:
             picdirs.sort(attribute=sort)
         if reverse:

@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from picstore.core.picdir import PicDir, date_format
 
 
-class ParentPicDir(Sequence[PicDir]):
+class ParentDir(Sequence[PicDir]):
     def __init__(self, directory: Path):
         Sequence.__init__(self)
         self._path = directory
@@ -64,4 +64,3 @@ class ParentPicDir(Sequence[PicDir]):
             self._picdirs.sort(key=lambda p: p.count_raw)
         if attribute == "date":
             self._picdirs.sort(key=lambda p: p.count_std)
-

@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from picstore.core.picdir import date_format
 from typing import Optional
-from picstore.core.parentpicdir import ParentPicDir
+from picstore.core.parentdir import ParentDir
 
 
 default_dir = config.default_dir
@@ -57,7 +57,7 @@ class Add(Command):
             copy: bool
     ) -> None:
         count = 0
-        picdir = ParentPicDir(directory=directory).get(name=name, date=date)
+        picdir = ParentDir(directory=directory).get(name=name, date=date)
         if source is not None:
             count += picdir.add(directory=source, recursive=recursive, copy=copy)
         else:
