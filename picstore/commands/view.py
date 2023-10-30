@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
-from typing import Tuple, Optional
+from typing import Collection, Optional
 from pathlib import Path
 from colorama import Style, Fore
 from picstore.core.parentdir import ParentDir
@@ -57,7 +57,7 @@ class View(Command):
         print_files(title=f"Invalid in {picdir.std.path}", files=picdir.std.get_invalid_owner_content())
 
 
-def print_files(title: str, files: Tuple[Path]) -> None:
+def print_files(title: str, files: Collection[Path]) -> None:
     print(title)
     if len(files) > 0:
         print("\t" + "\n\t".join(map(lambda p: p.name, files)))

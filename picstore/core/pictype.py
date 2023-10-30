@@ -35,10 +35,10 @@ def category(path: Path) -> Category:
 
 
 def categories(paths: Tuple[Path]) -> Dict[Path, Category]:
-    types = {}
-    for file in paths:
-        types[file] = category(path=file)
-    return types
+    picture_categories = {}
+    for path in paths:
+        picture_categories[path] = category(path=path)
+    return picture_categories
 
 
 def owner(path: Path, use_shell: bool = True) -> Ownership:
@@ -50,8 +50,8 @@ def owner(path: Path, use_shell: bool = True) -> Ownership:
 
 def owners(paths: Tuple[Path], use_shell: bool = True) -> Dict[Path, Ownership]:
     picture_owners = {}
-    for picture in paths:
-        picture_owners[picture] = owner(path=picture, use_shell=use_shell)
+    for path in paths:
+        picture_owners[path] = owner(path=path, use_shell=use_shell)
     return picture_owners
 
 
@@ -69,8 +69,8 @@ def evaluate_owner(path: Path) -> Ownership:
 
 def evaluate_owners(paths: Tuple[Path]) -> Dict[Path, Ownership]:
     picture_owners = {}
-    for picture in paths:
-        picture_owners[picture] = evaluate_owner(path=picture)
+    for path in paths:
+        picture_owners[path] = evaluate_owner(path=path)
     return picture_owners
 
 
@@ -98,10 +98,7 @@ def get_type(path: Path, use_shell: bool = True) -> Tuple[Category, Ownership]:
     return pic_category, pic_owner
 
 
-def get_types(
-        paths: Tuple[Path],
-        use_shell: bool = True
-) -> Dict[Path, Tuple[Category, Ownership]]:
+def get_types(paths: Tuple[Path], use_shell: bool = True) -> Dict[Path, Tuple[Category, Ownership]]:
     types = {}
     for path in paths:
         types[path] = get_type(path=path, use_shell=use_shell)

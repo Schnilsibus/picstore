@@ -8,12 +8,10 @@ from picstore.core.picdir import PicDir, date_format
 class ParentDir(Sequence[PicDir]):
     def __init__(self, directory: Path):
         Sequence.__init__(self)
+        if not directory.is_dir():
+            raise ValueError(f"{directory} is not a directory")
         self._path = directory
         self._picdirs = self._load_picdirs()
-
-    @property
-    def path(self) -> Path:
-        return self._path
 
     def __len__(self):
         return len(self._picdirs)
@@ -24,11 +22,18 @@ class ParentDir(Sequence[PicDir]):
     def _load_picdirs(self) -> List[PicDir]:
         picdirs = []
         for path in self.path.iterdir():
-            try:
-                picdirs.append(PicDir(path_or_parent=path))
-            except BaseException:
-                pass
+            if not path.is_dir():
+                continue
+            elif not PicDir.is_name_correct(directory=path):
+                continue
+            elif PicDir.required_directories_exist(directory=path):
+                continue
+            picdirs.append(PicDir(path_or_parent=path))
         return picdirs
+
+    @property
+    def path(self) -> Path:
+        return self._path
 
     def get(self, name: str, date: Optional[datetime.date] = None) -> PicDir:
         for picdir in self:
@@ -58,9 +63,12 @@ class ParentDir(Sequence[PicDir]):
     def sort(self, attribute: Literal["name", "date", "raw", "std"] = "date") -> None:
         if attribute == "name":
             self._picdirs.sort(key=lambda p: p.name)
-        if attribute == "date":
+        elif attribute == "date":
             self._picdirs.sort(key=lambda p: p.date)
-        if attribute == "raw":
+        elif attribute == "raw":
             self._picdirs.sort(key=lambda p: p.count_raw)
-        if attribute == "date":
+        elif attribute == "std":
             self._picdirs.sort(key=lambda p: p.count_std)
+
+    def update(self) -> None:
+        self._picdirs = self._load_picdirs()

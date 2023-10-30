@@ -5,10 +5,12 @@ from picstore.core.parentdir import ParentDir
 from picstore.config import config
 from picstore.commands.command import Command
 
+
 default_dir = Path(config.default_dir)
 
 
 class Repair(Command):
+
     name = "repair"
 
     def __init__(self):
