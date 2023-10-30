@@ -26,7 +26,7 @@ class ParentDir(Sequence[PicDir]):
         for path in self.path.iterdir():
             try:
                 picdirs.append(PicDir(path_or_parent=path))
-            except Exception:
+            except BaseException:
                 pass
         return picdirs
 

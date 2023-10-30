@@ -70,7 +70,7 @@ class SubDir(Sequence[Path]):
             picture: Path,
             copy: bool = True
     ) -> bool:
-        pic_category = pictype.category(file=picture)
+        pic_category = pictype.category(path=picture)
         if not self.is_addable(picture=picture, category=pic_category):
             return False
         shutil.copy2(src=picture, dst=self.path) if copy else shutil.move(src=picture, dst=self.path)
@@ -80,10 +80,10 @@ class SubDir(Sequence[Path]):
         self._content = self._load_content()
 
     def get_invalid_category_content(self) -> Tuple[Path]:
-        return tuple(filter(lambda p: pictype.category(file=p) not in self._categories, self.iterdir()))
+        return tuple(filter(lambda p: pictype.category(path=p) not in self._categories, self.iterdir()))
 
     def get_invalid_owner_content(self) -> Tuple[Path]:
-        return tuple(filter(lambda p: not pictype.owner(file_or_dir=p) == self._owner, self.iterdir()))
+        return tuple(filter(lambda p: not pictype.owner(path=p) == self._owner, self.iterdir()))
 
     def is_intact(self) -> bool:
         return len(self.get_invalid_category_content()) == 0

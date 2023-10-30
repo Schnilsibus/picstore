@@ -5,7 +5,6 @@ from picstore.commands.create import Create
 from picstore.commands.repair import Repair
 from picstore.commands.add import Add
 
-
 all_commands = [
     List(),
     View(),

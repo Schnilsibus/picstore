@@ -99,10 +99,10 @@ class PicDir:
         content = tuple(directory.iterdir())
         if recursive:
             content = tuple(directory.rglob("*"))
-        categories = pictype.categories(files=content)
-        content = tuple(filter(lambda p: not categories[p] == pictype.Category.Undefined, content))
+        categories = pictype.categories(paths=content)
+        not_ignored = tuple(filter(lambda p: not categories[p] == pictype.Category.Undefined, content))
         to_add = {}
-        for file in content:
+        for file in not_ignored:
             if self.raw.is_addable(picture=file, category=categories[file]):
                 to_add[file] = self.raw
             elif self.std.is_addable(picture=file, category=categories[file]):
