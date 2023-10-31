@@ -6,6 +6,7 @@ from picstore.core.parentdir import ParentDir
 from picstore.config import config
 from picstore.commands.command import Command
 
+
 default_dir = Path(config.default_dir)
 
 
@@ -27,7 +28,7 @@ class List(Command):
                                 help="sort the output",
                                 choices=["date", "name", "raw", "std"])
         raw_parser.add_argument("-r", "--reverse",
-                                help="reverse the list",
+                                help="reverse the order of the displayed list",
                                 action="store_true",
                                 default=False)
 
@@ -38,14 +39,12 @@ class List(Command):
     @staticmethod
     def list(
             directory: Path,
-            sort: Optional[Literal["date", "name", "raw", "std"]] = None,
-            reverse: bool = False
+            sort: Optional[Literal["date", "name", "raw", "std"]],
+            reverse: bool
     ) -> None:
         picdirs = ParentDir(directory=directory)
         if sort is not None:
             picdirs.sort(attribute=sort)
         if reverse:
             picdirs = reversed(picdirs)
-        print(PicDir.table_header())
-        for picdir in picdirs:
-            print(picdir)
+        print(f"{PicDir.table_header()}\n" + "\n".join(picdirs))

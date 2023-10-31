@@ -8,7 +8,7 @@ from typing import Optional
 from picstore.core.parentdir import ParentDir
 
 
-default_dir = config.default_dir
+default_dir = Path(config.default_dir)
 sources = map(Path, config.default_sources)
 
 
@@ -24,19 +24,19 @@ class Add(Command):
         raw_parser.add_argument("name",
                                 help="name of the picdir")
         raw_parser.add_argument("-dir",
-                                help=f"dir in which all pic dirs should be listed (default: {default_dir})",
+                                help=f"dir in which to search for the picdir (default: {default_dir})",
                                 type=Path,
                                 dest="directory",
                                 default=default_dir)
         raw_parser.add_argument("-d", "--date",
-                                help="the date (DD-MM-YY) of the picdir",
+                                help="the date (YYYY-MM-DD) of the picdir",
                                 type=lambda s: datetime.strptime(s, date_format))
         raw_parser.add_argument("-s", "--source",
                                 help="pictures to add in the new picdir \
-                                     (still searches paths in config.json if omitted)",
+                                      (still searches paths in config.json if omitted)",
                                 type=Path)
         raw_parser.add_argument("-r", "--recursive",
-                                help="try to add all files at any depth in the source directory",
+                                help="try to add files at any depth in the source directory",
                                 action="store_true",
                                 default=False)
         raw_parser.add_argument("-c", "--copy",
@@ -53,7 +53,8 @@ class Add(Command):
             directory: Path,
             name: str,
             date: Optional[datetime.date],
-            source: Path, recursive: bool,
+            source: Path,
+            recursive: bool,
             copy: bool
     ) -> None:
         count = 0
@@ -64,6 +65,4 @@ class Add(Command):
             for source in sources:
                 if source.is_dir():
                     count += picdir.add(directory=source, recursive=recursive, copy=copy)
-        print(f"added {count} files to picdir in {picdir.path}:")
-        print(picdir)
-
+        print(f"added {count} files to picdir in {picdir.path}:\n{picdir}")

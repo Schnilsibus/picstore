@@ -8,10 +8,12 @@ from picstore.core.picdir import date_format
 from picstore.config import config
 from picstore.commands.command import Command
 
+
 default_dir = Path(config.default_dir)
 
 
 class View(Command):
+
     name = "view"
 
     def __init__(self):
@@ -22,12 +24,12 @@ class View(Command):
         raw_parser.add_argument("name",
                                 help="name of the picdir")
         raw_parser.add_argument("-dir",
-                                help=f"dir in which all pic dirs should be listed (default: {default_dir})",
+                                help=f"dir where to look for the picdir (default: {default_dir})",
                                 type=Path,
                                 dest="directory",
                                 default=default_dir)
         raw_parser.add_argument("-d", "--date",
-                                help="the date (DD-MM-YY) of the picdir",
+                                help="the date (YYYY-MM-DD) of the picdir",
                                 type=lambda s: datetime.strptime(s, date_format))
 
     @staticmethod
@@ -36,11 +38,7 @@ class View(Command):
 
     @staticmethod
     def view(directory: Path, name: str, date: Optional[datetime.date] = None) -> None:
-        parent_picdir = ParentDir(directory=directory)
-        picdir = parent_picdir.get(name=name, date=date)
-        if picdir is None:
-            date_str = "" if date is None else f"with date {date.strftime(date_format)}"
-            raise RuntimeError(f"picdir '{name}' {date_str} not found in {directory}")
+        picdir = ParentDir(directory=directory).get(name=name, date=date)
         title = f"Information on PicDir '{picdir.name}':"
         print(f"{Style.BRIGHT}{title}{Style.RESET_ALL}" + "\n" + "-" * len(title))
         print(f"{'Name:'.ljust(10)}{picdir.name}")
@@ -53,12 +51,15 @@ class View(Command):
         else:
             print(f"{'Status:'.ljust(10)}{Fore.RED}bad{Style.RESET_ALL}")
         print()
-        print_files(title=f"Invalid in {picdir.raw.path}", files=picdir.raw.get_invalid_category_content())
-        print_files(title=f"Invalid in {picdir.std.path}", files=picdir.std.get_invalid_owner_content())
+        print_files(description=f"Invalid in {picdir.raw.path}", files=picdir.raw.get_invalid_category_content())
+        print_files(description=f"Invalid in {picdir.std.path}", files=picdir.std.get_invalid_category_content())
+        print_files(description=f"Wrong owner in {picdir.raw.path}", files=picdir.raw.get_invalid_owner_content())
+        print_files(description=f"Wrong owner in {picdir.std.path}", files=picdir.std.get_invalid_owner_content())
+        print_files(description=f"Wrong owner in {picdir.other.path}", files=picdir.other.get_invalid_owner_content())
 
 
-def print_files(title: str, files: Collection[Path]) -> None:
-    print(title)
+def print_files(description: str, files: Collection[Path]) -> None:
+    print(description)
     if len(files) > 0:
         print("\t" + "\n\t".join(map(lambda p: p.name, files)))
     else:
