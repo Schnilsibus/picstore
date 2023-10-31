@@ -1,5 +1,4 @@
-from picstore.app import run
-from picstore.cli import parse
+from picstore import app
 
 
 # TODO: error handling
@@ -7,7 +6,7 @@ from picstore.cli import parse
 # TODO: final (manual) test of every command
 
 def main():
-    run(arguments=parse())
+    app.start()
 
 
 if __name__ == "__main__":

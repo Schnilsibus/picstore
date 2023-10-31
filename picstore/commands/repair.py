@@ -46,7 +46,7 @@ class Repair(Command):
                 print(f"repaired all picdirs in {directory}:")
             else:
                 print(f"couldn't repair all picdirs in {directory}:")
-            List.list(directory=directory)
+            List.list(directory=directory, sort=None, reverse=False)
         else:
             if repair_single(directory=directory):
                 print(f"repaired picdir in {directory}:")
