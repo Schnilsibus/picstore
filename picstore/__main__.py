@@ -1,8 +1,10 @@
 from picstore import app
 
 
-# TODO: error handling
-# TODO: think about other dir: do I want to acknowlege its existance or dont I? --> decide and then follow through with that
+# TODO: OTHER DIR SHOULD BE A FIXED PART OF THE APP:
+# - add it to view
+# - add it to add
+# - maybe more stuff needs to be done there
 # TODO: final (manual) test of every command
 
 
