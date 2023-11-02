@@ -5,6 +5,7 @@ from colorama import Fore, Style
 from tqdm import tqdm
 from picstore.config import config
 from picstore.core.subdir import SubDir
+from picstore.core.error import raise_NotADirectoryError, SubDirError
 
 
 date_format = "%Y-%m-%d"
@@ -20,6 +21,8 @@ class PicDir:
     def __init__(self, path_or_parent: Path, name: Optional[str] = None, date: Optional[datetime.date] = None):
         if (name is None and date is not None) or (name is not None and date is None):
             raise TypeError("name and date must either both have a value or both be None")
+        if not path_or_parent.is_dir():
+            raise_NotADirectoryError(path=path_or_parent)
         if name is None:
             self._path = path_or_parent
             self._name, self._date = PicDir._parse_directory_name(directory=self._path)
@@ -43,7 +46,7 @@ class PicDir:
             string += self.name[:-3] + "..." + tab
         else:
             string += self.name.ljust(20) + tab
-        string += self._date.strftime(date_format) + tab
+        string += self.date.strftime(date_format) + tab
         if self.raw_count >= 10 ** 5:
             string += ">=10^5" + tab
         else:
@@ -60,16 +63,16 @@ class PicDir:
 
     def _load_sub_directories(self) -> Dict[str, Path]:
         directories = {}
-        for sub_directory_name in PicDir.required_directories:
-            directories[sub_directory_name] = self._path / sub_directory_name
-            if not directories[sub_directory_name].is_dir():
-                raise OSError(f"The {sub_directory_name} sub directory is missing")
+        for name in PicDir.required_directories:
+            directories[name] = self.path / name
+            if not directories[name].is_dir():
+                raise SubDirError(path=directories[name])
         return directories
 
     @staticmethod
     def _parse_directory_name(directory: Path) -> Tuple[str, datetime.date]:
         if not directory.is_dir():
-            raise ValueError(f"{directory} is not a directory")
+            raise_NotADirectoryError(path=directory)
         date = datetime.datetime.strptime(directory.name[:10], date_format)
         name = directory.name[11:]
         return name, date
@@ -112,6 +115,8 @@ class PicDir:
         self.other.update()
 
     def add(self, directory: Path, display_tqdm: bool = True, recursive: bool = True, copy: bool = False) -> int:
+        if not directory.is_dir():
+            raise_NotADirectoryError(path=directory)
         content = tuple(directory.iterdir())
         if recursive:
             content = tuple(directory.rglob("*"))
@@ -151,7 +156,7 @@ class PicDir:
     @staticmethod
     def is_name_correct(directory: Path) -> bool:
         if not directory.is_dir():
-            raise ValueError(f"{str(directory)} is no directory")
+            raise_NotADirectoryError(path=directory)
         name = directory.name
         try:
             assert name[4] == name[7] == "-"
@@ -166,12 +171,14 @@ class PicDir:
     @staticmethod
     def required_directories_exist(directory: Path) -> bool:
         if not directory.is_dir():
-            raise ValueError(f"{str(directory)} is no directory")
+            raise_NotADirectoryError(path=directory)
         sub_directory_names = map(lambda d: d.name, directory.iterdir())
         return set(PicDir.required_directories) <= set(sub_directory_names)
 
     @staticmethod
     def create_required_directories(directory: Path) -> None:
+        if not directory.is_dir():
+            raise_NotADirectoryError(path=directory)
         for sub_directory_name in PicDir.required_directories:
             subdir = directory / sub_directory_name
             if not subdir.is_dir():
@@ -179,6 +186,8 @@ class PicDir:
 
     @staticmethod
     def rename_directory(directory: Path) -> Path:
+        if not directory.is_dir():
+            raise_NotADirectoryError(path=directory)
         name = directory.name
         name_parts = name.replace("-", "_").split("_")
         if len(name_parts) < 4:

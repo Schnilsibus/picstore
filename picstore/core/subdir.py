@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Generator, Set
 import shutil
 from picstore.core import pictype
+from picstore.core.error import raise_NotADirectoryError, SubDirError
 
 
 class SubDir(Sequence[Path]):
@@ -12,10 +13,9 @@ class SubDir(Sequence[Path]):
     def __init__(self, directory: Path):
         Sequence.__init__(self)
         if not directory.is_dir():
-            raise ValueError(f"{directory} is not a directory")
+            raise_NotADirectoryError(path=directory)
         if directory.name not in SubDir.possible_directory_names:
-            raise ValueError(f"directory name '{directory.name}' \
-                               not one of ({', '.join(SubDir.possible_directory_names)})")
+            raise SubDirError(path=directory)
         self._path = directory
         self._name = directory.name
         self._content = self._load_content()
