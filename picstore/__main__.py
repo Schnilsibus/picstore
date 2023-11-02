@@ -1,13 +1,12 @@
-import picstore
+from picstore import app
 
 
 # TODO: error handling
-# TODO: final look over everything (better type hints)
 # TODO: final (manual) test of every command
 
 
 def main():
-    picstore.start()
+    app.start()
 
 
 if __name__ == "__main__":

@@ -2,9 +2,10 @@ from pathlib import Path
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from typing import Optional
-from picstore.core import date_format, ParentDir
+from picstore.core import date_format, ParentDir, PicDirNotFoundError, PicDir
 from commands.command import Command
 from picstore.config import config
+
 
 default_dir = Path(config.default_dir)
 sources = map(Path, config.default_sources)
@@ -56,11 +57,25 @@ class Add(Command):
             copy: bool
     ) -> None:
         count = 0
-        picdir = ParentDir(directory=directory).get(name=name, date=date)
+        try:
+            picdir = ParentDir(directory=directory).get(name=name, date=date)
+        except NotADirectoryError as ex:
+            print(f"ERROR: Cannot load PicDir from {directory}")
+            raise ex
+        except PicDirNotFoundError as ex:
+            print(f"ERROR: PicDir not found in {directory}")
+            raise ex
         if source is not None:
-            count += picdir.add(directory=source, recursive=recursive, copy=copy)
+            add_single_dir(picdir=picdir, source=source, recursive=recursive, copy=copy)
         else:
             for source in sources:
-                if source.is_dir():
-                    count += picdir.add(directory=source, recursive=recursive, copy=copy)
+                count += add_single_dir(picdir=picdir, source=source, recursive=recursive, copy=copy)
         print(f"added {count} files to picdir in {picdir.path}:\n{picdir}")
+
+
+def add_single_dir(picdir: PicDir, source: Path, recursive: bool, copy: bool) -> int:
+    try:
+        return picdir.add(directory=source, recursive=recursive, copy=copy)
+    except NotADirectoryError as ex:
+        print(f"ERROR: can not add {source}")
+        raise ex
