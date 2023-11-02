@@ -41,7 +41,11 @@ class List(Command):
             sort: Optional[Literal["date", "name", "raw", "std"]],
             reverse: bool
     ) -> None:
-        picdirs = ParentDir(directory=directory)
+        try:
+            picdirs = ParentDir(directory=directory)
+        except NotADirectoryError as ex:
+            print(f"ERROR: {directory} is not a directory")
+            raise ex
         if sort is not None:
             picdirs.sort(attribute=sort)
         if reverse:

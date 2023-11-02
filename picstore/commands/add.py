@@ -60,7 +60,7 @@ class Add(Command):
         try:
             picdir = ParentDir(directory=directory).get(name=name, date=date)
         except NotADirectoryError as ex:
-            print(f"ERROR: Cannot load PicDir from {directory}")
+            print(f"ERROR: {directory} is not a directory")
             raise ex
         except PicDirNotFoundError as ex:
             print(f"ERROR: PicDir not found in {directory}")

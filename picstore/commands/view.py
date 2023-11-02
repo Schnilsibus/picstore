@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Collection, Optional
 from pathlib import Path
 from colorama import Style, Fore
-from picstore.core import ParentDir, date_format
+from picstore.core import ParentDir, date_format, PicDirNotFoundError
 from picstore.config import config
 from commands.command import Command
 
@@ -37,7 +37,14 @@ class View(Command):
 
     @staticmethod
     def view(directory: Path, name: str, date: Optional[datetime.date] = None) -> None:
-        picdir = ParentDir(directory=directory).get(name=name, date=date)
+        try:
+            picdir = ParentDir(directory=directory).get(name=name, date=date)
+        except NotADirectoryError as ex:
+            print(f"ERROR: {directory} is not a directory")
+            raise ex
+        except PicDirNotFoundError as ex:
+            print(f"ERROR: PicDir not found in {directory}")
+            raise ex
         title = f"Information on PicDir '{picdir.name}':"
         print(f"{Style.BRIGHT}{title}{Style.RESET_ALL}" + "\n" + "-" * len(title))
         print(f"{'Name:'.ljust(10)}{picdir.name}")

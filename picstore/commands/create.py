@@ -2,7 +2,7 @@ from pathlib import Path
 import datetime
 from argparse import ArgumentParser, Namespace
 from typing import Optional
-from picstore.core import ParentDir, date_format
+from picstore.core import ParentDir, date_format, PicDirDuplicateError
 from picstore.config import config
 from commands.command import Command
 from commands import Add
@@ -63,7 +63,19 @@ class Create(Command):
             recursive: bool,
             copy: bool
     ) -> None:
-        picdir = ParentDir(directory=directory).add(name=name, date=date)
+        try:
+            picdir = ParentDir(directory=directory).add(name=name, date=date)
+        except NotADirectoryError as ex:
+            print(f"ERROR: {directory} is not a directory")
+            raise ex
+        except PicDirDuplicateError as ex:
+            print("Error: PicDir already exists")
+            raise ex
         print(f"created new picdir in {picdir.path}:\n{picdir}")
         if not bare:
-            Add.run(arguments=Namespace(**locals()))
+            Add.add(directory=directory,
+                    name=name,
+                    date=date,
+                    source=source,
+                    recursive=recursive,
+                    copy=copy)
