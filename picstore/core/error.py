@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Optional
 from datetime import datetime
-from picstore.core.picdir import date_format
+from picstore.core import date_format
 
 
 def raise_NotADirectoryError(path: Path) -> None:
@@ -19,7 +19,7 @@ class PicDirNotFoundError(KeyError):
 
     @staticmethod
     def _name_date_to_string(name: str, date: Optional[datetime.date]) -> str:
-        date_addon = f"and date {date} "
+        date_addon = f"and date {date.strftime(date_format)} "
         return f"No PicDir with name {name} {date_addon if date else ''}found"
 
 

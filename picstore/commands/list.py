@@ -1,10 +1,9 @@
 from argparse import ArgumentParser, Namespace
 from typing import Literal, Optional
 from pathlib import Path
-from picstore.core.picdir import PicDir
-from picstore.core.parentdir import ParentDir
+from picstore.core import PicDir, ParentDir
 from picstore.config import config
-from picstore.commands.command import Command
+from commands.command import Command
 
 
 default_dir = Path(config.default_dir)

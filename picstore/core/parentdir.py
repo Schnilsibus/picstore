@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import List, Optional, Literal
 from datetime import datetime
 from collections.abc import Sequence
-from picstore.core.picdir import PicDir
+from picstore.core import PicDir
 from picstore.core.error import raise_NotADirectoryError, PicDirNotFoundError, PicDirDuplicateError
 
 

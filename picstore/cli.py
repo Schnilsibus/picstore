@@ -1,23 +1,12 @@
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 from typing import Callable
-from picstore.commands.list import List
-from picstore.commands.view import View
-from picstore.commands.create import Create
-from picstore.commands.repair import Repair
-from picstore.commands.add import Add
+from picstore.commands import all_commands
 
 
 program_name = "picstore"
 description = "picstore is a cmd program that handles storage of pictures. \
                It's core functionality is to organize pictures in 'picdirs'."
 epilog = "'picstore <command> -h' for detailed information on a command."
-all_commands = [
-    List,
-    View,
-    Create,
-    Repair,
-    Add
-]
 
 
 class PicParser(ArgumentParser):

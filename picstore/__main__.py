@@ -1,4 +1,4 @@
-from picstore import app
+import picstore
 
 
 # TODO: error handling
@@ -7,7 +7,7 @@ from picstore import app
 
 
 def main():
-    app.start()
+    picstore.start()
 
 
 if __name__ == "__main__":

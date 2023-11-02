@@ -4,11 +4,9 @@ from typing import Tuple, Optional, Dict
 from colorama import Fore, Style
 from tqdm import tqdm
 from picstore.config import config
+from picstore.core import date_format
 from picstore.core.subdir import SubDir
 from picstore.core.error import raise_NotADirectoryError, SubDirError
-
-
-date_format = "%Y-%m-%d"
 
 
 _raw_suffixes = config.raw_types
