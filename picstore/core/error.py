@@ -4,7 +4,7 @@ from datetime import datetime
 from picstore.core import date_format
 
 
-def raise_NotADirectoryError(path: Path) -> None:
+def raise_no_directory(path: Path) -> None:
     raise NotADirectoryError(f"{path} is no directory")
 
 

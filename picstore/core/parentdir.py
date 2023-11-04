@@ -3,14 +3,14 @@ from typing import List, Optional, Literal
 from datetime import datetime
 from collections.abc import Sequence
 from picstore.core import PicDir
-from picstore.core.error import raise_NotADirectoryError, PicDirNotFoundError, PicDirDuplicateError
+from picstore.core.error import raise_no_directory, PicDirNotFoundError, PicDirDuplicateError
 
 
 class ParentDir(Sequence[PicDir]):
     def __init__(self, directory: Path):
         Sequence.__init__(self)
         if not directory.is_dir():
-            raise_NotADirectoryError(path=directory)
+            raise_no_directory(path=directory)
         self._path = directory
         self._picdirs = self._load_picdirs()
 

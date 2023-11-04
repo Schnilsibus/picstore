@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Generator, Set
 import shutil
 from picstore.core import pictype
-from picstore.core.error import raise_NotADirectoryError, SubDirError
+from picstore.core.error import raise_no_directory, SubDirError
 
 
 class SubDir(Sequence[Path]):
@@ -13,7 +13,7 @@ class SubDir(Sequence[Path]):
     def __init__(self, directory: Path):
         Sequence.__init__(self)
         if not directory.is_dir():
-            raise_NotADirectoryError(path=directory)
+            raise_no_directory(path=directory)
         if directory.name not in SubDir.possible_directory_names:
             raise SubDirError(path=directory)
         self._path = directory
@@ -51,13 +51,7 @@ class SubDir(Sequence[Path]):
         return self.path.iterdir()
 
     def is_addable(self, picture: Path) -> bool:
-        if self.name == "OTHR":
-            return False
-        if self.is_ignored(path=picture):
-            return False
-        if self.contains_name(name=picture.name):
-            return False
-        return True
+        return not (self.is_ignored(path=picture) and self.contains_name(name=picture.name))
 
     def is_ignored(self, path: Path) -> bool:
         if not path.is_file():
