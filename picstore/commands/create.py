@@ -4,8 +4,8 @@ from argparse import ArgumentParser, Namespace
 from typing import Optional
 from picstore.core import ParentDir, date_format, PicDirDuplicateError
 from picstore.config import config
-from commands.command import Command
-from commands import Add
+from picstore.commands.command import Command
+from picstore.commands import Add
 
 
 default_dir = Path(config.default_dir)

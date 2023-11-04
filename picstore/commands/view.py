@@ -5,7 +5,7 @@ from pathlib import Path
 from colorama import Style, Fore
 from picstore.core import ParentDir, date_format, PicDirNotFoundError
 from picstore.config import config
-from commands.command import Command
+from picstore.commands.command import Command
 
 
 default_dir = Path(config.default_dir)

@@ -3,7 +3,7 @@ from typing import Literal, Optional
 from pathlib import Path
 from picstore.core import PicDir, ParentDir
 from picstore.config import config
-from commands.command import Command
+from picstore.commands.command import Command
 
 
 default_dir = Path(config.default_dir)

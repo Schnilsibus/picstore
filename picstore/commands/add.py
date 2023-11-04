@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from typing import Optional
 from picstore.core import date_format, ParentDir, PicDirNotFoundError, PicDir
-from commands.command import Command
+from picstore.commands.command import Command
 from picstore.config import config
 
 
