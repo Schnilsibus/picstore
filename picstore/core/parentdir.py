@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import List, Optional, Literal
 from datetime import datetime
 from collections.abc import Sequence
-from picstore.core import PicDir
+from picstore.core.picdir import PicDir, date_format
 from picstore.core.error import raise_no_directory, PicDirNotFoundError, PicDirDuplicateError
 
 
@@ -15,9 +15,11 @@ class ParentDir(Sequence[PicDir]):
         self._picdirs = self._load_picdirs()
 
     def __len__(self):
+        self.update()
         return len(self._picdirs)
 
     def __getitem__(self, item):
+        self.update()
         return self._picdirs[item]
 
     def _load_picdirs(self) -> List[PicDir]:
@@ -27,7 +29,7 @@ class ParentDir(Sequence[PicDir]):
                 continue
             elif not PicDir.is_name_correct(directory=path):
                 continue
-            elif PicDir.required_directories_exist(directory=path):
+            elif not PicDir.required_directories_exist(directory=path):
                 continue
             picdirs.append(PicDir(path_or_parent=path))
         return picdirs
@@ -37,14 +39,16 @@ class ParentDir(Sequence[PicDir]):
         return self._path
 
     def get(self, name: str, date: Optional[datetime.date] = None) -> PicDir:
+        self.update()
         for picdir in self:
             if date is None and picdir.name == name:
                 return picdir
             elif date is not None and picdir.name == name and picdir.date == date:
                 return picdir
-        raise PicDirNotFoundError(name=name, date=date)
+        raise PicDirNotFoundError(name=name, date=date.strftime(date_format))
 
     def exists(self, name: str, date: Optional[datetime.date] = None) -> bool:
+        self.update()
         try:
             self.get(name=name, date=date)
             return True
@@ -53,12 +57,13 @@ class ParentDir(Sequence[PicDir]):
 
     def add(self, name: str, date: datetime.date) -> PicDir:
         if self.exists(name=name, date=date):
-            raise PicDirDuplicateError(name=name, date=date)
+            raise PicDirDuplicateError(name=name, date=date.strftime(date_format))
         new_picdir = PicDir(path_or_parent=self.path, name=name, date=date)
         self._picdirs.append(new_picdir)
         return new_picdir
 
     def sort(self, attribute: Literal["name", "date", "raw", "std"] = "date") -> None:
+        self.update()
         if attribute == "name":
             self._picdirs.sort(key=lambda p: p.name)
         elif attribute == "date":

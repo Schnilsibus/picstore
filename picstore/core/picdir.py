@@ -4,9 +4,11 @@ from typing import Tuple, Optional, Dict
 from colorama import Fore, Style
 from tqdm import tqdm
 from picstore.config import config
-from picstore.core import date_format
 from picstore.core.subdir import SubDir
 from picstore.core.error import raise_no_directory, SubDirError
+
+
+date_format = "%Y-%m-%d"
 
 
 _raw_suffixes = config.raw_types
@@ -172,8 +174,8 @@ class PicDir:
     def required_directories_exist(directory: Path) -> bool:
         if not directory.is_dir():
             raise_no_directory(path=directory)
-        sub_directory_names = map(lambda d: d.name, directory.iterdir())
-        return set(PicDir.required_directories) <= set(sub_directory_names)
+        sub_directory_names = set(map(lambda d: d.name, directory.iterdir()))
+        return set(PicDir.required_directories) <= sub_directory_names
 
     @staticmethod
     def create_required_directories(directory: Path) -> None:

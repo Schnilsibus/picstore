@@ -1,8 +1,8 @@
-from add import Add
-from create import Create
-from list import List
-from repair import Repair
-from view import View
+from picstore.commands.add import Add
+from picstore.commands.create import Create
+from picstore.commands.list import List
+from picstore.commands.repair import Repair
+from picstore.commands.view import View
 
 
 all_commands = [

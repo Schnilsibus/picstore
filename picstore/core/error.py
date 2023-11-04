@@ -1,7 +1,5 @@
 from pathlib import Path
 from typing import Optional
-from datetime import datetime
-from picstore.core import date_format
 
 
 def raise_no_directory(path: Path) -> None:
@@ -14,20 +12,20 @@ class SubDirError(ValueError):
 
 
 class PicDirNotFoundError(KeyError):
-    def __init__(self, name: str, date: Optional[datetime.date]):
-        ValueError.__init__(self, PicDirNotFoundError._name_date_to_string(name=name, date=date))
+    def __init__(self, name: str, date: Optional[str]):
+        KeyError.__init__(self, PicDirNotFoundError._name_date_to_string(name=name, date=date))
 
     @staticmethod
-    def _name_date_to_string(name: str, date: Optional[datetime.date]) -> str:
-        date_addon = f"and date {date.strftime(date_format)} "
+    def _name_date_to_string(name: str, date: Optional[str]) -> str:
+        date_addon = f"and date {date} "
         return f"No PicDir with name {name} {date_addon if date else ''}found"
 
 
 class PicDirDuplicateError(ValueError):
-    def __init__(self, name: str, date: Optional[datetime.date]):
+    def __init__(self, name: str, date: Optional[str]):
         ValueError.__init__(self, PicDirDuplicateError._name_date_to_string(name=name, date=date))
 
     @staticmethod
-    def _name_date_to_string(name: str, date: Optional[datetime.date]) -> str:
-        date_addon = f"and date {date.strftime(date_format)} "
-        return f"No PicDir with name {name} {date_addon if date else ''}found"
+    def _name_date_to_string(name: str, date: Optional[str]) -> str:
+        date_addon = f"and date {date} "
+        return f"PicDir with name {name} {date_addon if date else ''}already exists"

@@ -2,7 +2,8 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from picstore.core import PicDir, ParentDir
 from picstore.config import config
-from picstore.commands import List, View
+from picstore.commands.list import List
+from picstore.commands.view import View
 from picstore.commands.command import Command
 
 
@@ -91,6 +92,4 @@ def resort_files(
         display_tqdm: bool = True
 ) -> int:
     return picdir.add(directory=picdir.path,
-                      display_tqdm=display_tqdm,
-                      recursive=True,
-                      copy=False)
+                      display_tqdm=display_tqdm)
