@@ -45,7 +45,8 @@ class ParentDir(Sequence[PicDir]):
                 return picdir
             elif date is not None and picdir.name == name and picdir.date == date:
                 return picdir
-        raise PicDirNotFoundError(name=name, date=date.strftime(date_format))
+        date_str = "" if date is None else date.strftime(date_format)
+        raise PicDirNotFoundError(name=name, date=date_str)
 
     def exists(self, name: str, date: Optional[datetime.date] = None) -> bool:
         self.update()

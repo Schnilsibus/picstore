@@ -18,16 +18,16 @@ class SubDir(Sequence[Path]):
             raise SubDirError(path=directory)
         self._path = directory
         self._name = directory.name
-        self._content = self._load_content()
         if directory.name == "RAW":
             self._categories = (pictype.Category.Raw, )
-            self._owner = pictype.Ownership.Own
+            self._owners = (pictype.Ownership.Own, )
         elif directory.name == "STD":
             self._categories = (pictype.Category.Std, )
-            self._owner = pictype.Ownership.Own
+            self._owners = (pictype.Ownership.Own, )
         elif directory.name == "OTHR":
-            self._categories = (pictype.Category.Raw, pictype.Category.Raw)
-            self._owner = pictype.Ownership.Other
+            self._categories = (pictype.Category.Raw, pictype.Category.Std)
+            self._owners = (pictype.Ownership.Other, pictype.Ownership.Undefined)
+        self._content = self._load_content()
 
     def __len__(self):
         return len(self._content)
@@ -72,12 +72,12 @@ class SubDir(Sequence[Path]):
         self._content = self._load_content()
 
     def get_invalid_category_content(self) -> Set[Path]:
-        return set(filter(lambda p: pictype.category(path=p) not in self._categories, self.iterdir()))
+        pic_categories = pictype.categories(paths=tuple(self.iterdir()))
+        return set(filter(lambda p: pic_categories[p] not in self._categories, pic_categories.keys()))
 
     def get_invalid_owner_content(self) -> Set[Path]:
-        return set(filter(lambda p: not pictype.owner(path=p) == self._owner, self.iterdir()))
+        pic_owners = pictype.owners(paths=tuple(self.iterdir()), use_shell=False)
+        return set(filter(lambda p: pic_owners[p] not in self._owners, pic_owners.keys()))
 
     def is_intact(self) -> bool:
-        if self.name == "OTHR":
-            return True
         return len(self.get_invalid_category_content()) == 0
