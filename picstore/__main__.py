@@ -1,4 +1,4 @@
-from picstore import app
+from picstore import picstore
 
 
 # TODO: final (manual) test of every command
@@ -6,7 +6,7 @@ from picstore import app
 
 
 def main():
-    app.start()
+    picstore.start()
 
 
 if __name__ == "__main__":

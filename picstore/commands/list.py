@@ -43,11 +43,11 @@ class List(Command):
     ) -> None:
         try:
             picdirs = ParentDir(directory=directory)
-        except NotADirectoryError as ex:
+        except NotADirectoryError:
             print(f"ERROR: Cannot list Picdirs in {directory} since its no directory")
             return
         if sort is not None:
             picdirs.sort(attribute=sort)
         if reverse:
             picdirs = reversed(picdirs)
-        print(f"{PicDir.table_header()}\n" + "\n".join(picdirs))
+        print(f"{PicDir.table_header()}\n" + "\n".join(map(str, picdirs)))

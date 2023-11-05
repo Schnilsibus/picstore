@@ -39,6 +39,10 @@ class PicDir:
         self._other_directory = SubDir(directory=self._directories["OTHR"])
         self.update()
 
+    def __repr__(self):
+        self.update()
+        return f"{self.date.strftime(date_format)}_{self.name}"
+
     def __str__(self):
         self.update()
         tab = "   "

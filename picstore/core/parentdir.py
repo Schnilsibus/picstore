@@ -15,11 +15,9 @@ class ParentDir(Sequence[PicDir]):
         self._picdirs = self._load_picdirs()
 
     def __len__(self):
-        self.update()
         return len(self._picdirs)
 
     def __getitem__(self, item):
-        self.update()
         return self._picdirs[item]
 
     def _load_picdirs(self) -> List[PicDir]:
@@ -69,9 +67,9 @@ class ParentDir(Sequence[PicDir]):
         elif attribute == "date":
             self._picdirs.sort(key=lambda p: p.date)
         elif attribute == "raw":
-            self._picdirs.sort(key=lambda p: p.count_raw)
+            self._picdirs.sort(key=lambda p: p.raw_count)
         elif attribute == "std":
-            self._picdirs.sort(key=lambda p: p.count_std)
+            self._picdirs.sort(key=lambda p: p.std_count)
 
     def update(self) -> None:
         self._picdirs = self._load_picdirs()

@@ -76,6 +76,8 @@ def evaluate_owners(paths: Tuple[Path]) -> Dict[Path, Ownership]:
     for path in list(pic_categories.keys()):
         if pic_categories[path] == Category.Undefined:
             del pic_categories[path]
+    if len(pic_categories) == 0:
+        return all_owners
     with ExifToolHelper() as et:
         metadata = et.get_tags(files=list(pic_categories.keys()), tags=model_tag)
     for i, path in enumerate(pic_categories):
