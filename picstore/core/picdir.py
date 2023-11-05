@@ -37,7 +37,6 @@ class PicDir:
         self._raw_directory = SubDir(directory=self._directories["RAW"])
         self._std_directory = SubDir(directory=self._directories["STD"])
         self._other_directory = SubDir(directory=self._directories["OTHR"])
-        self.update()
 
     def __repr__(self):
         self.update()
