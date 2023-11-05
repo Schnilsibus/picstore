@@ -67,10 +67,12 @@ class Add(Command):
             print(f"ERROR: PicDir {name}, {date_str} not found in {directory}")
             return
         if source is not None:
+            print(f"adding files from {source}")
             count = add_single_dir(picdir=picdir, source=source, recursive=recursive, copy=copy)
         else:
-            for source in sources:
-                count += add_single_dir(picdir=picdir, source=source, recursive=recursive, copy=copy)
+            for default_source in sources:
+                print(f"adding files from {default_source}")
+                count += add_single_dir(picdir=picdir, source=default_source, recursive=recursive, copy=copy)
         print(f"added {count} files to picdir in {picdir.path}:\n{picdir}")
 
 

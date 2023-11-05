@@ -58,12 +58,12 @@ class View(Command):
         else:
             print(f"{'Status:'.ljust(10)}{Fore.RED}bad{Style.RESET_ALL}")
         print()
-        print_files(description=f"Invalid in {picdir.raw.path}", files=picdir.raw.get_invalid_category_content())
-        print_files(description=f"Invalid in {picdir.std.path}", files=picdir.std.get_invalid_category_content())
-        print_files(description=f"Invalid in {picdir.other.path}", files=picdir.other.get_invalid_category_content())
-        print_files(description=f"Wrong owner in {picdir.raw.path}", files=picdir.raw.get_invalid_owner_content())
-        print_files(description=f"Wrong owner in {picdir.std.path}", files=picdir.std.get_invalid_owner_content())
-        print_files(description=f"Wrong owner in {picdir.other.path}", files=picdir.other.get_invalid_owner_content())
+        print_files(description=f"Invalid in {picdir.raw.path}:", files=picdir.raw.get_invalid_category_content())
+        print_files(description=f"Invalid in {picdir.std.path}:", files=picdir.std.get_invalid_category_content())
+        print_files(description=f"Invalid in {picdir.other.path}:", files=picdir.other.get_invalid_category_content())
+        print_files(description=f"Wrong owner in {picdir.raw.path}:", files=picdir.raw.get_invalid_owner_content())
+        print_files(description=f"Wrong owner in {picdir.std.path}:", files=picdir.std.get_invalid_owner_content())
+        print_files(description=f"Wrong owner in {picdir.other.path}:", files=picdir.other.get_invalid_owner_content())
 
 
 def print_files(description: str, files: Collection[Path]) -> None:

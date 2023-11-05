@@ -71,8 +71,10 @@ class Create(Command):
         except PicDirDuplicateError:
             print(f"Error: PicDir {name}, {date.strftime(date_format)} already exists")
             return
-        print(f"created new picdir in {picdir.path}:\n{picdir}")
-        if not bare:
+        print(f"created new picdir in {picdir.path}")
+        if bare:
+            print(picdir)
+        else:
             Add.add(directory=directory,
                     name=name,
                     date=date,
