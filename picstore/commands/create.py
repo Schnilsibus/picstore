@@ -65,12 +65,12 @@ class Create(Command):
     ) -> None:
         try:
             picdir = ParentDir(directory=directory).add(name=name, date=date)
-        except NotADirectoryError as ex:
-            print(f"ERROR: {directory} is not a directory")
-            raise ex
-        except PicDirDuplicateError as ex:
-            print("Error: PicDir already exists")
-            raise ex
+        except NotADirectoryError:
+            print(f"ERROR: cannot create a PicDir in {directory}, since its no directory")
+            return
+        except PicDirDuplicateError:
+            print(f"Error: PicDir {name}, {date.strftime(date_format)} already exists")
+            return
         print(f"created new picdir in {picdir.path}:\n{picdir}")
         if not bare:
             Add.add(directory=directory,

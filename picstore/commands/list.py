@@ -44,8 +44,8 @@ class List(Command):
         try:
             picdirs = ParentDir(directory=directory)
         except NotADirectoryError as ex:
-            print(f"ERROR: {directory} is not a directory")
-            raise ex
+            print(f"ERROR: Cannot list Picdirs in {directory} since its no directory")
+            return
         if sort is not None:
             picdirs.sort(attribute=sort)
         if reverse:

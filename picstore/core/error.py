@@ -1,31 +1,34 @@
 from pathlib import Path
 from typing import Optional
+from datetime import datetime
 
 
-def raise_no_directory(path: Path) -> None:
-    raise NotADirectoryError(f"{path} is no directory")
+class PicstoreException(Exception):
+    def __init__(self, message: Optional[str] = None):
+        Exception.__init__(self, message)
 
 
-class SubDirError(ValueError):
-    def __init__(self, path: Path):
-        ValueError.__init__(self, f"{path} is not a SubDir")
+class MissingSubDirError(PicstoreException):
+    def __init__(self, missing_dir: str):
+        PicstoreException.__init__(self)
+        self.missing_dir = missing_dir
 
 
-class PicDirNotFoundError(KeyError):
-    def __init__(self, name: str, date: Optional[str]):
-        KeyError.__init__(self, PicDirNotFoundError._name_date_to_string(name=name, date=date))
-
-    @staticmethod
-    def _name_date_to_string(name: str, date: Optional[str]) -> str:
-        date_addon = f"and date {date} "
-        return f"No PicDir with name {name} {date_addon if date else ''}found"
+class NotASubDirError(PicstoreException):
+    def __init__(self, bad_directory: Path):
+        PicstoreException.__init__(self)
+        self.bad_directory = bad_directory
 
 
-class PicDirDuplicateError(ValueError):
-    def __init__(self, name: str, date: Optional[str]):
-        ValueError.__init__(self, PicDirDuplicateError._name_date_to_string(name=name, date=date))
+class PicDirNotFoundError(PicstoreException):
+    def __init__(self, name: str, date: Optional[datetime.date]):
+        PicstoreException.__init__(self)
+        self.name = name
+        self.date = date
 
-    @staticmethod
-    def _name_date_to_string(name: str, date: Optional[str]) -> str:
-        date_addon = f"and date {date} "
-        return f"PicDir with name {name} {date_addon if date else ''}already exists"
+
+class PicDirDuplicateError(PicstoreException):
+    def __init__(self, name: str, date: Optional[datetime.date]):
+        PicstoreException.__init__(self)
+        self.name = name
+        self.date = date

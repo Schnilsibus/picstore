@@ -60,13 +60,14 @@ class Add(Command):
         try:
             picdir = ParentDir(directory=directory).get(name=name, date=date)
         except NotADirectoryError as ex:
-            print(f"ERROR: {directory} is not a directory")
-            raise ex
+            print(f"ERROR: Cannot add to PicDirs in {directory} since its no directory")
+            return
         except PicDirNotFoundError as ex:
-            print(f"ERROR: PicDir not found in {directory}")
-            raise ex
+            date_str = "" if date is None else date.strftime(date_format)
+            print(f"ERROR: PicDir {name}, {date_str} not found in {directory}")
+            return
         if source is not None:
-            add_single_dir(picdir=picdir, source=source, recursive=recursive, copy=copy)
+            count = add_single_dir(picdir=picdir, source=source, recursive=recursive, copy=copy)
         else:
             for source in sources:
                 count += add_single_dir(picdir=picdir, source=source, recursive=recursive, copy=copy)
@@ -76,6 +77,6 @@ class Add(Command):
 def add_single_dir(picdir: PicDir, source: Path, recursive: bool, copy: bool) -> int:
     try:
         return picdir.add(directory=source, recursive=recursive, copy=copy)
-    except NotADirectoryError as ex:
-        print(f"ERROR: can not add {source}")
-        raise ex
+    except NotADirectoryError:
+        print(f"ERROR: Cannot add from {source} since its no directory")
+        return 0

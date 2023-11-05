@@ -2,15 +2,15 @@ from pathlib import Path
 from typing import List, Optional, Literal
 from datetime import datetime
 from collections.abc import Sequence
-from picstore.core.picdir import PicDir, date_format
-from picstore.core.error import raise_no_directory, PicDirNotFoundError, PicDirDuplicateError
+from picstore.core.picdir import PicDir
+from picstore.core.error import PicDirNotFoundError, PicDirDuplicateError
 
 
 class ParentDir(Sequence[PicDir]):
     def __init__(self, directory: Path):
         Sequence.__init__(self)
         if not directory.is_dir():
-            raise_no_directory(path=directory)
+            raise NotADirectoryError(f"{directory} is not a directory")
         self._path = directory
         self._picdirs = self._load_picdirs()
 
@@ -45,8 +45,7 @@ class ParentDir(Sequence[PicDir]):
                 return picdir
             elif date is not None and picdir.name == name and picdir.date == date:
                 return picdir
-        date_str = "" if date is None else date.strftime(date_format)
-        raise PicDirNotFoundError(name=name, date=date_str)
+        raise PicDirNotFoundError(name=name, date=date)
 
     def exists(self, name: str, date: Optional[datetime.date] = None) -> bool:
         self.update()
@@ -58,7 +57,7 @@ class ParentDir(Sequence[PicDir]):
 
     def add(self, name: str, date: datetime.date) -> PicDir:
         if self.exists(name=name, date=date):
-            raise PicDirDuplicateError(name=name, date=date.strftime(date_format))
+            raise PicDirDuplicateError(name=name, date=date)
         new_picdir = PicDir(path_or_parent=self.path, name=name, date=date)
         self._picdirs.append(new_picdir)
         return new_picdir

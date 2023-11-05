@@ -43,8 +43,8 @@ class Repair(Command):
             try:
                 parent_picdir = ParentDir(directory=directory)
             except NotADirectoryError as ex:
-                print(f"ERROR: {directory} is not a directory")
-                raise ex
+                print(f"ERROR: Cannot repair to PicDirs in {directory} since its no directory")
+                return
             if repair_all(parent_picdir=parent_picdir):
                 print(f"repaired all picdirs in {directory}:")
             else:
@@ -72,8 +72,8 @@ def repair_single(directory: Path) -> bool:
     try:
         correct_name = PicDir.is_name_correct(directory=directory)
     except NotADirectoryError as ex:
-        print(f"ERROR: {directory} is not a directory")
-        raise ex
+        print(f"ERROR: Cannot repair {directory} since is not a directory")
+        return False
     if not correct_name:
         directory = PicDir.rename_directory(directory=directory)
         if not PicDir.is_name_correct(directory=directory):

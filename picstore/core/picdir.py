@@ -5,7 +5,7 @@ from colorama import Fore, Style
 from tqdm import tqdm
 from picstore.config import config
 from picstore.core.subdir import SubDir
-from picstore.core.error import raise_no_directory, SubDirError
+from picstore.core.error import MissingSubDirError
 
 
 date_format = "%Y-%m-%d"
@@ -16,13 +16,14 @@ _std_suffixes = config.std_types
 
 
 class PicDir:
+
     required_directories = ["STD", "RAW", "EXP", "LR", "OTHR"]
 
     def __init__(self, path_or_parent: Path, name: Optional[str] = None, date: Optional[datetime.date] = None):
         if (name is None and date is not None) or (name is not None and date is None):
             raise TypeError("name and date must either both have a value or both be None")
         if not path_or_parent.is_dir():
-            raise_no_directory(path=path_or_parent)
+            raise NotADirectoryError(f"{path_or_parent} is not a directory")
         if name is None:
             self._path = path_or_parent
             self._name, self._date = PicDir._parse_directory_name(directory=self._path)
@@ -66,13 +67,13 @@ class PicDir:
         for name in PicDir.required_directories:
             directories[name] = self.path / name
             if not directories[name].is_dir():
-                raise SubDirError(path=directories[name])
+                raise MissingSubDirError(missing_dir=name)
         return directories
 
     @staticmethod
     def _parse_directory_name(directory: Path) -> Tuple[str, datetime.date]:
         if not directory.is_dir():
-            raise_no_directory(path=directory)
+            raise NotADirectoryError(f"{directory} is not a directory")
         date = datetime.datetime.strptime(directory.name[:10], date_format)
         name = directory.name[11:]
         return name, date
@@ -116,7 +117,7 @@ class PicDir:
 
     def add(self, directory: Path, display_tqdm: bool = True, recursive: bool = True, copy: bool = False) -> int:
         if not directory.is_dir():
-            raise_no_directory(path=directory)
+            raise NotADirectoryError(f"{directory} is not a directory")
         content = tuple(directory.iterdir())
         if recursive:
             content = tuple(directory.rglob("*"))
@@ -158,7 +159,7 @@ class PicDir:
     @staticmethod
     def is_name_correct(directory: Path) -> bool:
         if not directory.is_dir():
-            raise_no_directory(path=directory)
+            raise NotADirectoryError(f"{directory} is not a directory")
         name = directory.name
         try:
             assert name[4] == name[7] == "-"
@@ -173,14 +174,14 @@ class PicDir:
     @staticmethod
     def required_directories_exist(directory: Path) -> bool:
         if not directory.is_dir():
-            raise_no_directory(path=directory)
+            raise NotADirectoryError(f"{directory} is not a directory")
         sub_directory_names = set(map(lambda d: d.name, directory.iterdir()))
         return set(PicDir.required_directories) <= sub_directory_names
 
     @staticmethod
     def create_required_directories(directory: Path) -> None:
         if not directory.is_dir():
-            raise_no_directory(path=directory)
+            raise NotADirectoryError(f"{directory} is not a directory")
         for sub_directory_name in PicDir.required_directories:
             subdir = directory / sub_directory_name
             if not subdir.is_dir():
@@ -189,7 +190,7 @@ class PicDir:
     @staticmethod
     def rename_directory(directory: Path) -> Path:
         if not directory.is_dir():
-            raise_no_directory(path=directory)
+            raise NotADirectoryError(f"{directory} is not a directory")
         name = directory.name
         name_parts = name.replace("-", "_").split("_")
         if len(name_parts) < 4:

@@ -1,5 +1,4 @@
 from exiftool import ExifToolHelper
-from exiftool.exceptions import ExifToolException
 import enum
 from pathlib import Path
 from typing import Tuple, Dict
@@ -62,11 +61,8 @@ def evaluate_owner(path: Path) -> Ownership:
     model_tag = "EXIF:Model"
     if category(path=path) == Category.Undefined:
         return Ownership.Undefined
-    try:
-        with ExifToolHelper() as et:
-            metadata = et.get_tags(files=str(path), tags=model_tag)[0]
-    except ExifToolException:
-        raise
+    with ExifToolHelper() as et:
+        metadata = et.get_tags(files=str(path), tags=model_tag)[0]
     if model_tag in metadata:
         return Ownership.Own if metadata[model_tag] in _my_camera_models else Ownership.Other
     else:
@@ -80,11 +76,8 @@ def evaluate_owners(paths: Tuple[Path]) -> Dict[Path, Ownership]:
     for path in list(pic_categories.keys()):
         if pic_categories[path] == Category.Undefined:
             del pic_categories[path]
-    try:
-        with ExifToolHelper() as et:
-            metadata = et.get_tags(files=list(pic_categories.keys()), tags=model_tag)
-    except ExifToolException:
-        raise
+    with ExifToolHelper() as et:
+        metadata = et.get_tags(files=list(pic_categories.keys()), tags=model_tag)
     for i, path in enumerate(pic_categories):
         pic_data = metadata[i]
         if model_tag in pic_data:

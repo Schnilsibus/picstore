@@ -39,12 +39,13 @@ class View(Command):
     def view(directory: Path, name: str, date: Optional[datetime.date] = None) -> None:
         try:
             picdir = ParentDir(directory=directory).get(name=name, date=date)
-        except NotADirectoryError as ex:
-            print(f"ERROR: {directory} is not a directory")
-            raise ex
-        except PicDirNotFoundError as ex:
-            print(f"ERROR: PicDir not found in {directory}")
-            raise ex
+        except NotADirectoryError:
+            print(f"ERROR: Cannot view a PicDir in {directory} since its no directory")
+            return
+        except PicDirNotFoundError:
+            date_str = "" if date is None else date.strftime(date_format)
+            print(f"ERROR: PicDir {name}, {date_str} not found in {directory}")
+            return
         title = f"Information on PicDir '{picdir.name}':"
         print(f"{Style.BRIGHT}{title}{Style.RESET_ALL}" + "\n" + "-" * len(title))
         print(f"{'Name:'.ljust(10)}{picdir.name}")
