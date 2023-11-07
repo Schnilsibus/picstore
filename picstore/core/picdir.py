@@ -4,6 +4,7 @@ from typing import Tuple, Optional, Dict
 from colorama import Fore, Style
 from tqdm import tqdm
 from picstore.config import config
+from picstore.core import pictype
 from picstore.core.subdir import SubDir
 from picstore.core.error import MissingSubDirError
 
@@ -124,20 +125,25 @@ class PicDir:
         content = tuple(directory.iterdir())
         if recursive:
             content = tuple(directory.rglob("*"))
-        files_to_add = {}
+        types = pictype.get_types(paths=content, use_shell=False)
+        destinations = {}
         for file in content:
-            if self.raw.is_addable(picture=file):
-                files_to_add[file] = self.raw
-            elif self.std.is_addable(picture=file):
-                files_to_add[file] = self.std
-            elif self.other.is_addable(picture=file):
-                files_to_add[file] = self.other
-        if len(files_to_add) == 0:
+            category, owner = types[file]
+            if self.raw.is_addable(picture=file, category=category, owner=owner):
+                destinations[file] = self.raw
+            elif self.std.is_addable(picture=file, category=category, owner=owner):
+                destinations[file] = self.std
+            elif self.other.is_addable(picture=file, category=category, owner=owner):
+                destinations[file] = self.other
+        if len(destinations) == 0:
             return 0
-        iterator = tqdm(files_to_add, desc=f"adding {directory.name}", unit="files") if display_tqdm else files_to_add
+        iterator = tqdm(destinations, desc=f"adding {directory.name}", unit="files") if display_tqdm else destinations
+        count = 0
         for file in iterator:
-            files_to_add[file].add(picture=file, copy=copy)
-        return len(files_to_add)
+            category, owner = types[file]
+            if destinations[file].add(picture=file, category=category, owner=owner, copy=copy):
+                count += 1
+        return count
 
     def is_intact(self) -> bool:
         if not PicDir.is_name_correct(directory=self._path):

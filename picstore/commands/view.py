@@ -43,8 +43,8 @@ class View(Command):
             print(f"ERROR: Cannot view a PicDir in {directory} since its no directory")
             return
         except PicDirNotFoundError:
-            date_str = "" if date is None else date.strftime(date_format)
-            print(f"ERROR: PicDir {name}, {date_str} not found in {directory}")
+            date_str = "any" if date is None else date.strftime(date_format)
+            print(f"ERROR: PicDir with name '{name}' and date '{date_str}' not found in {directory}")
             return
         title = f"Information on PicDir '{picdir.name}':"
         print(f"{Style.BRIGHT}{title}{Style.RESET_ALL}" + "\n" + "-" * len(title))

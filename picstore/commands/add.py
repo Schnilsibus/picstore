@@ -59,12 +59,12 @@ class Add(Command):
         count = 0
         try:
             picdir = ParentDir(directory=directory).get(name=name, date=date)
-        except NotADirectoryError as ex:
+        except NotADirectoryError:
             print(f"ERROR: Cannot add to PicDirs in {directory} since its no directory")
             return
-        except PicDirNotFoundError as ex:
-            date_str = "" if date is None else date.strftime(date_format)
-            print(f"ERROR: PicDir {name}, {date_str} not found in {directory}")
+        except PicDirNotFoundError:
+            date_str = "any" if date is None else date.strftime(date_format)
+            print(f"ERROR: PicDir with '{name}' and date '{date_str}' not found in {directory}")
             return
         if source is not None:
             print(f"adding files from {source}")

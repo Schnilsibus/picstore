@@ -37,7 +37,8 @@ class SubDir(Sequence[Path]):
 
     def _load_content(self) -> List[Path]:
         all_content = tuple(self.iterdir())
-        return list(filter(lambda p: not self.is_ignored(path=p), all_content))
+        types = pictype.get_types(paths=all_content, use_shell=False)
+        return list(filter(lambda p: not self.is_ignored(path=p, category=types[p][0], owner=types[p][1]), all_content))
 
     @property
     def path(self) -> Path:
@@ -50,20 +51,25 @@ class SubDir(Sequence[Path]):
     def iterdir(self) -> Generator[Path, None, None]:
         return self.path.iterdir()
 
-    def is_addable(self, picture: Path) -> bool:
-        return not (self.is_ignored(path=picture) and self.contains_name(name=picture.name))
+    def is_addable(self, picture: Path, category: pictype.Category, owner: pictype.Ownership) -> bool:
+        is_ignored = self.is_ignored(path=picture, category=category, owner=owner)
+        is_contained = self.contains_name(name=picture.name)
+        return not is_ignored and not is_contained
 
-    def is_ignored(self, path: Path) -> bool:
+    def is_ignored(self, path: Path, category: pictype.Category, owner: pictype.Ownership) -> bool:
         if not path.is_file():
             return True
-        if pictype.category(path=path) in self._categories:
-            return False
+        if category not in self._categories:
+            return True
+        if owner not in self._owners:
+            return True
+        return False
 
     def contains_name(self, name: str) -> bool:
         return name in map(lambda p: p.name, self.iterdir())
 
-    def add(self, picture: Path, copy: bool = True) -> bool:
-        if not self.is_addable(picture=picture):
+    def add(self, picture: Path, category: pictype.Category, owner: pictype.Ownership, copy: bool = True) -> bool:
+        if not self.is_addable(picture=picture, category=category, owner=owner):
             return False
         shutil.copy2(src=picture, dst=self.path) if copy else shutil.move(src=picture, dst=self.path)
         return True

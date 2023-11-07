@@ -1,7 +1,9 @@
 {
   "default_dir": "D:/Desktop/parent_dir",
   "default_sources": [
-    "D:/Desktop/test_source"
+    "D:/Desktop/test_source/OTHER",
+    "D:/Desktop/test_source/OWN/RAW",
+    "D:/Desktop/test_source/OWN/STD"
   ],
   "raw_types": [
     ".CR2",
