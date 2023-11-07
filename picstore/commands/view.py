@@ -23,7 +23,7 @@ class View(Command):
         raw_parser.add_argument("name",
                                 help="name of the picdir")
         raw_parser.add_argument("-dir",
-                                help=f"dir where to look for the picdir (default: {default_dir})",
+                                help=f"dir where to look for the picdir",
                                 type=Path,
                                 dest="directory",
                                 default=default_dir)
@@ -58,15 +58,15 @@ class View(Command):
         else:
             print(f"{'Status:'.ljust(10)}{Fore.RED}bad{Style.RESET_ALL}")
         print()
-        print_files(description=f"Invalid in {picdir.raw.path}:", files=picdir.raw.get_invalid_category_content())
-        print_files(description=f"Invalid in {picdir.std.path}:", files=picdir.std.get_invalid_category_content())
-        print_files(description=f"Invalid in {picdir.other.path}:", files=picdir.other.get_invalid_category_content())
-        print_files(description=f"Wrong owner in {picdir.raw.path}:", files=picdir.raw.get_invalid_owner_content())
-        print_files(description=f"Wrong owner in {picdir.std.path}:", files=picdir.std.get_invalid_owner_content())
-        print_files(description=f"Wrong owner in {picdir.other.path}:", files=picdir.other.get_invalid_owner_content())
+        _print_files(description=f"Invalid in {picdir.raw.path}:", files=picdir.raw.get_invalid_category_content())
+        _print_files(description=f"Invalid in {picdir.std.path}:", files=picdir.std.get_invalid_category_content())
+        _print_files(description=f"Invalid in {picdir.other.path}:", files=picdir.other.get_invalid_category_content())
+        _print_files(description=f"Wrong owner in {picdir.raw.path}:", files=picdir.raw.get_invalid_owner_content())
+        _print_files(description=f"Wrong owner in {picdir.std.path}:", files=picdir.std.get_invalid_owner_content())
+        _print_files(description=f"Wrong owner in {picdir.other.path}:", files=picdir.other.get_invalid_owner_content())
 
 
-def print_files(description: str, files: Collection[Path]) -> None:
+def _print_files(description: str, files: Collection[Path]) -> None:
     print(description)
     if len(files) > 0:
         print("\t" + "\n\t".join(map(lambda p: p.name, files)))

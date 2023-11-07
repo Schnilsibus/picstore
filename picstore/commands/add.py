@@ -23,7 +23,7 @@ class Add(Command):
         raw_parser.add_argument("name",
                                 help="name of the picdir")
         raw_parser.add_argument("-dir",
-                                help=f"dir in which to search for the picdir (default: {default_dir})",
+                                help=f"dir in which to search for the picdir",
                                 type=Path,
                                 dest="directory",
                                 default=default_dir)
@@ -60,7 +60,7 @@ class Add(Command):
         try:
             picdir = ParentDir(directory=directory).get(name=name, date=date)
         except NotADirectoryError:
-            print(f"ERROR: Cannot add to PicDirs in {directory} since its no directory")
+            print(f"ERROR: Cannot add to a PicDir in {directory} since its no directory")
             return
         except PicDirNotFoundError:
             date_str = "any" if date is None else date.strftime(date_format)
@@ -68,15 +68,15 @@ class Add(Command):
             return
         if source is not None:
             print(f"adding files from {source}")
-            count = add_single_dir(picdir=picdir, source=source, recursive=recursive, copy=copy)
+            count = _add_single_dir(picdir=picdir, source=source, recursive=recursive, copy=copy)
         else:
             for default_source in sources:
                 print(f"adding files from {default_source}")
-                count += add_single_dir(picdir=picdir, source=default_source, recursive=recursive, copy=copy)
+                count += _add_single_dir(picdir=picdir, source=default_source, recursive=recursive, copy=copy)
         print(f"added {count} files to picdir in {picdir.path}:\n{picdir}")
 
 
-def add_single_dir(picdir: PicDir, source: Path, recursive: bool, copy: bool) -> int:
+def _add_single_dir(picdir: PicDir, source: Path, recursive: bool, copy: bool) -> int:
     try:
         return picdir.add(directory=source, recursive=recursive, copy=copy)
     except NotADirectoryError:

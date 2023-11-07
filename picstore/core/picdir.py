@@ -176,7 +176,7 @@ class PicDir:
             int(name[:4])
             int(name[5:7])
             int(name[8:10])
-        except AssertionError | ValueError:
+        except (AssertionError, ValueError):
             return False
         return True
 
@@ -218,4 +218,4 @@ class PicDir:
             return directory
         date = datetime.date(year=year, month=month, day=day)
         new_name = f"{date.strftime(date_format)}_{''.join(name_parts[3:])}"
-        return directory.rename(new_name)
+        return directory.rename(directory.parent / new_name)

@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
+from typing import Union
 from picstore.core import PicDir, ParentDir
 from picstore.config import config
 from picstore.commands.list import List
@@ -20,8 +21,7 @@ class Repair(Command):
     @staticmethod
     def construct_parser(raw_parser: ArgumentParser) -> None:
         raw_parser.add_argument("-dir",
-                                help=f"path to the parent directory (or picdir) \
-                                       that needs repairing (default: {default_dir}).",
+                                help=f"path to the parent directory (or picdir) that needs repairing",
                                 type=Path,
                                 default=default_dir,
                                 dest="directory")
@@ -42,8 +42,8 @@ class Repair(Command):
         if not single:
             try:
                 parent_picdir = ParentDir(directory=directory)
-            except NotADirectoryError as ex:
-                print(f"ERROR: Cannot repair to PicDirs in {directory} since its no directory")
+            except NotADirectoryError:
+                print(f"ERROR: Cannot repair PicDirs in {directory} since its no directory")
                 return
             if repair_all(parent_picdir=parent_picdir):
                 print(f"repaired all picdirs in {directory}:")
@@ -51,45 +51,40 @@ class Repair(Command):
                 print(f"couldn't repair all picdirs in {directory}:")
             List.list(directory=directory, sort=None, reverse=False)
         else:
-            if repair_single(directory=directory):
-                print(f"repaired picdir in {directory}:")
-                picdir = PicDir(path_or_parent=directory)
-                View.view(directory=picdir.path.parent, name=picdir.name, date=picdir.date)
+            repaired = _repair_single(directory=directory)
+            if repaired is None or not repaired.is_intact():
+                print(f"failed to repair {directory}")
             else:
-                print(f"failed to repair picdir in {directory}")
+                print(f"repaired {directory}:")
+                View.view(directory=repaired.path.parent, name=repaired.name, date=repaired.date)
 
 
 def repair_all(parent_picdir: ParentDir) -> bool:
     repaired_all = True
     for directory in parent_picdir.path.iterdir():
         if directory.is_dir():
-            repaired = repair_single(directory=directory)
-            repaired_all = repaired_all and repaired
+            repaired = _repair_single(directory=directory)
+            if repaired is None:
+                repaired_all = False
+            else:
+                repaired_all = repaired_all and repaired.is_intact()
     return repaired_all
 
 
-def repair_single(directory: Path) -> bool:
+def _repair_single(directory: Path) -> Union[PicDir, None]:
     try:
         correct_name = PicDir.is_name_correct(directory=directory)
-    except NotADirectoryError as ex:
+    except NotADirectoryError:
         print(f"ERROR: Cannot repair {directory} since is not a directory")
-        return False
+        return None
     if not correct_name:
         directory = PicDir.rename_directory(directory=directory)
         if not PicDir.is_name_correct(directory=directory):
-            return False
+            return None
     if not PicDir.required_directories_exist(directory=directory):
         PicDir.create_required_directories(directory=directory)
         if not PicDir.required_directories_exist(directory=directory):
-            return False
+            return None
     picdir = PicDir(path_or_parent=directory)
-    resort_files(picdir=picdir)
-    return picdir.is_intact()
-
-
-def resort_files(
-        picdir: PicDir,
-        display_tqdm: bool = True
-) -> int:
-    return picdir.add(directory=picdir.path,
-                      display_tqdm=display_tqdm)
+    picdir.add(directory=picdir.path)
+    return picdir

@@ -24,12 +24,12 @@ class Create(Command):
         raw_parser.add_argument("name",
                                 help="name of the new picdir")
         raw_parser.add_argument("-dir",
-                                help=f"where to create the new picdir (default: {default_dir})",
+                                help=f"where to create the new picdir",
                                 type=Path,
                                 default=default_dir,
                                 dest="directory")
         raw_parser.add_argument("-d", "--date",
-                                help="the date (YYYY-MM-DD) of the new picdir (default: today)",
+                                help="the date (YYYY-MM-DD) of the new picdir",
                                 type=lambda s: datetime.datetime.strptime(s, date_format),
                                 default=datetime.date.today().strftime(date_format))
         raw_parser.add_argument("-s", "--source",

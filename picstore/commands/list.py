@@ -19,7 +19,7 @@ class List(Command):
     @staticmethod
     def construct_parser(raw_parser: ArgumentParser) -> None:
         raw_parser.add_argument("-dir",
-                                help=f"dir in which all pic dirs should be listed (default: {default_dir})",
+                                help=f"dir in which all pic dirs should be listed",
                                 type=Path,
                                 dest="directory",
                                 default=default_dir)
